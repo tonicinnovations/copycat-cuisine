@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import NavBar from '@/components/NavBar';
-import ApiKeyForm from '@/components/ApiKeyForm';
 import { getPremiumStatus, clearPremiumStatus } from '@/utils/storage';
 import { toast } from 'sonner';
 
@@ -109,12 +108,6 @@ const Account = () => {
                 Log Out
               </Button>
             </div>
-          </div>
-          
-          <Separator className="my-8 bg-culinary-beige/50" />
-          
-          <div className="grid grid-cols-1 gap-8">
-            <ApiKeyForm />
           </div>
         </motion.div>
       </main>

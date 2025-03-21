@@ -1,5 +1,8 @@
-import { toast } from 'sonner';
-import { getApiKey } from '@/components/ApiKeyForm';
+import { toast } from "sonner";
+import { getPremiumStatus } from "./storage";
+
+// Replace this with your actual OpenAI API key
+const OPENAI_API_KEY = "your-api-key-here";
 
 // Simulated sample responses for recipes
 const sampleResponses: Record<string, any> = {
@@ -122,13 +125,13 @@ const sampleResponses: Record<string, any> = {
   }
 };
 
-// Function to get recipes - uses real ChatGPT API if available, falls back to simulation
+// Function to get recipes - uses real ChatGPT API, falls back to simulation
 export const getRecipe = async (query: string): Promise<any> => {
-  const apiKey = getApiKey();
+  const isPremium = getPremiumStatus().isPremium;
   
-  // If we have an API key, use the real ChatGPT API
-  if (apiKey) {
-    return fetchRecipeFromChatGPT(query, apiKey);
+  // If API key is set, use the real ChatGPT API
+  if (OPENAI_API_KEY && OPENAI_API_KEY !== "your-api-key-here") {
+    return fetchRecipeFromChatGPT(query);
   }
   
   // Otherwise, use the simulated responses
@@ -164,7 +167,7 @@ export const getRecipe = async (query: string): Promise<any> => {
 };
 
 // Function to fetch a recipe from ChatGPT
-const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<any> => {
+const fetchRecipeFromChatGPT = async (query: string): Promise<any> => {
   try {
     const prompt = `
       Create a copycat recipe for "${query}" that would be found at a restaurant or store.
@@ -196,7 +199,7 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
         model: 'gpt-4o',
@@ -242,7 +245,7 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
     return {
       notFound: true,
       query,
-      message: `I tried to ask ChatGPT for this recipe, but encountered an error: ${error.message}. Please check your API key or try again later.`
+      message: `I tried to ask ChatGPT for this recipe, but encountered an error: ${error.message}. Please check the API key or try again later.`
     };
   }
 };
