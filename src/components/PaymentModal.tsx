@@ -1,12 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Loader2, CreditCard, CheckCircle2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { CreditCard } from 'lucide-react';
+
+// Import refactored components
+import CreditCardForm from './payment/CreditCardForm';
+import PayPalButton from './payment/PayPalButton';
+import PaymentSuccess from './payment/PaymentSuccess';
+import PriceSummary from './payment/PriceSummary';
 
 interface PaymentModalProps {
   open: boolean;
@@ -19,92 +21,10 @@ interface PaymentModalProps {
   onSuccess: () => void;
 }
 
-declare global {
-  interface Window {
-    paypal?: {
-      Buttons: (options: any) => {
-        render: (element: string | HTMLElement) => void;
-      };
-    };
-  }
-}
-
-// Your PayPal client ID - Replace this with your actual production client ID
-const PAYPAL_CLIENT_ID = "YOUR_PRODUCTION_CLIENT_ID";
-
 const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => {
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
-  const [paypalLoaded, setPaypalLoaded] = useState(false);
-  
-  // Load PayPal SDK when the modal opens and paypal is selected
-  useEffect(() => {
-    if (open && paymentMethod === 'paypal' && !paypalLoaded && !window.paypal) {
-      const script = document.createElement('script');
-      // Use production PayPal SDK with your client ID
-      script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
-      script.addEventListener('load', () => {
-        setPaypalLoaded(true);
-      });
-      document.body.appendChild(script);
-      
-      return () => {
-        if (document.body.contains(script)) {
-          document.body.removeChild(script);
-        }
-      };
-    }
-  }, [open, paymentMethod, paypalLoaded]);
-  
-  // Initialize PayPal buttons when the SDK is loaded
-  useEffect(() => {
-    if (paypalLoaded && window.paypal && plan && paymentMethod === 'paypal') {
-      const paypalButtonsContainer = document.getElementById('paypal-button-container');
-      if (paypalButtonsContainer) {
-        paypalButtonsContainer.innerHTML = '';
-        
-        window.paypal.Buttons({
-          // Create order with the actual amount from the selected plan
-          createOrder: (data: any, actions: any) => {
-            return actions.order.create({
-              purchase_units: [{
-                amount: {
-                  value: plan.price.replace('$', '')
-                },
-                description: `CopyCat Cuisine ${plan.name} Plan`
-              }]
-            });
-          },
-          // Handle successful payment
-          onApprove: (data: any, actions: any) => {
-            setIsProcessing(true);
-            
-            // Process the actual payment
-            return actions.order.capture().then(function(details: any) {
-              // Payment is completed - you can now record the transaction in your database
-              console.log('Transaction completed by ' + details.payer.name.given_name);
-              
-              setIsProcessing(false);
-              setIsComplete(true);
-              
-              // After showing success state, close modal and call success callback
-              setTimeout(() => {
-                onClose();
-                onSuccess();
-              }, 2000);
-            });
-          },
-          // Handle payment errors
-          onError: (err: any) => {
-            console.error('PayPal Error:', err);
-            toast.error('There was an error processing your payment');
-            setIsProcessing(false);
-          }
-        }).render('#paypal-button-container');
-      }
-    }
-  }, [paypalLoaded, plan, paymentMethod, onClose, onSuccess]);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,10 +43,18 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
     }, 1500);
   };
   
+  const handleClose = () => {
+    // Reset state when modal is closed
+    if (!isProcessing) {
+      setIsComplete(false);
+      onClose();
+    }
+  };
+  
   if (!plan) return null;
   
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px] bg-white p-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle className="text-xl font-display font-medium">
@@ -141,18 +69,7 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
         </DialogHeader>
         
         {isComplete ? (
-          <div className="flex flex-col items-center justify-center px-6 pb-6 py-8">
-            <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mb-4">
-              <CheckCircle2 size={28} className="text-green-500" />
-            </div>
-            <h3 className="text-lg font-medium mb-1">Welcome to Premium!</h3>
-            <p className="text-center text-muted-foreground mb-6">
-              You now have access to all premium features. Enjoy your culinary adventures!
-            </p>
-            <Button onClick={onClose} className="w-full">
-              Start Exploring
-            </Button>
-          </div>
+          <PaymentSuccess onClose={onClose} />
         ) : (
           <>
             <Tabs 
@@ -176,97 +93,22 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
               </TabsList>
               
               <TabsContent value="card" className="space-y-4">
-                <form onSubmit={handleSubmit}>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="col-span-2">
-                        <Label htmlFor="name">Cardholder Name</Label>
-                        <Input id="name" placeholder="John Doe" required />
-                      </div>
-                      <div className="col-span-2">
-                        <Label htmlFor="card">Card Number</Label>
-                        <Input id="card" placeholder="4242 4242 4242 4242" required />
-                      </div>
-                      <div>
-                        <Label htmlFor="expiry">Expiry Date</Label>
-                        <Input id="expiry" placeholder="MM/YY" required />
-                      </div>
-                      <div>
-                        <Label htmlFor="cvc">CVC</Label>
-                        <Input id="cvc" placeholder="123" required />
-                      </div>
-                    </div>
-                    
-                    <div className="bg-culinary-cream/50 p-3 rounded-lg">
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm">Subtotal</span>
-                        <span className="text-sm font-medium">{plan.price}</span>
-                      </div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm">Tax</span>
-                        <span className="text-sm font-medium">Calculated at checkout</span>
-                      </div>
-                      <div className="flex justify-between font-medium mt-2 pt-2 border-t border-culinary-beige">
-                        <span>Total</span>
-                        <span>{plan.price}</span>
-                      </div>
-                    </div>
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-culinary-copper hover:bg-culinary-copper/90"
-                      disabled={isProcessing}
-                    >
-                      {isProcessing ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        `Pay ${plan.price}`
-                      )}
-                    </Button>
-                  </div>
-                </form>
+                <CreditCardForm 
+                  plan={plan} 
+                  isProcessing={isProcessing} 
+                  onSubmit={handleSubmit} 
+                />
               </TabsContent>
               
               <TabsContent value="paypal" className="flex flex-col items-center justify-center py-4">
-                <div className="bg-culinary-cream/50 p-3 rounded-lg w-full mb-4">
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm">Subtotal</span>
-                    <span className="text-sm font-medium">{plan.price}</span>
-                  </div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm">Tax</span>
-                    <span className="text-sm font-medium">Calculated at checkout</span>
-                  </div>
-                  <div className="flex justify-between font-medium mt-2 pt-2 border-t border-culinary-beige">
-                    <span>Total</span>
-                    <span>{plan.price}</span>
-                  </div>
-                </div>
+                <PriceSummary price={plan.price} />
                 
-                {paypalLoaded ? (
-                  <div id="paypal-button-container" className="w-full min-h-[150px]"></div>
-                ) : (
-                  <Button 
-                    onClick={handleSubmit}
-                    className="w-full bg-[#0070BA] hover:bg-[#005ea6]"
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      "Pay with PayPal"
-                    )}
-                  </Button>
-                )}
-                <p className="text-xs text-center text-muted-foreground mt-3">
-                  You will be redirected to PayPal to complete your payment.
-                </p>
+                <PayPalButton 
+                  plan={plan}
+                  onProcessingChange={setIsProcessing}
+                  onComplete={() => setIsComplete(true)}
+                  onSuccess={onSuccess}
+                />
               </TabsContent>
             </Tabs>
             
