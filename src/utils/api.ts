@@ -1,8 +1,14 @@
 import { toast } from "sonner";
 import { getPremiumStatus } from "./storage";
 
-// Replace this with your actual OpenAI API key
-const OPENAI_API_KEY = "your-api-key-here";
+// OpenAI API key - will be retrieved from localStorage
+const getApiKey = (): string | null => {
+  return localStorage.getItem('openai_api_key');
+};
+
+const setApiKey = (key: string): void => {
+  localStorage.setItem('openai_api_key', key);
+};
 
 // Simulated sample responses for recipes
 const sampleResponses: Record<string, any> = {
@@ -128,10 +134,11 @@ const sampleResponses: Record<string, any> = {
 // Function to get recipes - uses real ChatGPT API, falls back to simulation
 export const getRecipe = async (query: string): Promise<any> => {
   const isPremium = getPremiumStatus().isPremium;
+  const apiKey = getApiKey();
   
   // If API key is set, use the real ChatGPT API
-  if (OPENAI_API_KEY && OPENAI_API_KEY !== "your-api-key-here") {
-    return fetchRecipeFromChatGPT(query);
+  if (apiKey) {
+    return fetchRecipeFromChatGPT(query, apiKey);
   }
   
   // Otherwise, use the simulated responses
@@ -167,7 +174,7 @@ export const getRecipe = async (query: string): Promise<any> => {
 };
 
 // Function to fetch a recipe from ChatGPT
-const fetchRecipeFromChatGPT = async (query: string): Promise<any> => {
+const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<any> => {
   try {
     const prompt = `
       Create a copycat recipe for "${query}" that would be found at a restaurant or store.
@@ -199,7 +206,7 @@ const fetchRecipeFromChatGPT = async (query: string): Promise<any> => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
         model: 'gpt-4o',
@@ -281,3 +288,6 @@ export const processPayment = async (plan: string, paymentDetails: any): Promise
     }, 2000);
   });
 };
+
+// Export the API key functions
+export { getApiKey, setApiKey };
