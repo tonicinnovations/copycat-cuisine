@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Enhanced build configuration for Chrome extension
   build: {
     // Ensure we don't inline assets for Chrome extension
     assetsInlineLimit: 0,
