@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { Printer, Share2, Plus, Minus, Utensils, ArrowDown, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import PremiumFeature from './PremiumFeature';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface RecipeCardProps {
   recipe: {
@@ -23,6 +23,7 @@ interface RecipeCardProps {
 const RecipeCard = ({ recipe, isPremium = false }: RecipeCardProps) => {
   const [servings, setServings] = useState(recipe.servings);
   const [expanded, setExpanded] = useState(false);
+  const navigate = useNavigate();
   
   const handlePrint = () => {
     window.print();
