@@ -29,6 +29,9 @@ declare global {
   }
 }
 
+// Your PayPal client ID - Replace this with your actual production client ID
+const PAYPAL_CLIENT_ID = "YOUR_PRODUCTION_CLIENT_ID";
+
 const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => {
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -39,7 +42,8 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
   useEffect(() => {
     if (open && paymentMethod === 'paypal' && !paypalLoaded && !window.paypal) {
       const script = document.createElement('script');
-      script.src = "https://www.paypal.com/sdk/js?client-id=sb&currency=USD";
+      // Use production PayPal SDK with your client ID
+      script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
       script.addEventListener('load', () => {
         setPaypalLoaded(true);
       });
@@ -61,21 +65,26 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
         paypalButtonsContainer.innerHTML = '';
         
         window.paypal.Buttons({
+          // Create order with the actual amount from the selected plan
           createOrder: (data: any, actions: any) => {
-            // This is a demo, so we're using the sandbox environment
             return actions.order.create({
               purchase_units: [{
                 amount: {
                   value: plan.price.replace('$', '')
-                }
+                },
+                description: `CopyCat Cuisine ${plan.name} Plan`
               }]
             });
           },
+          // Handle successful payment
           onApprove: (data: any, actions: any) => {
             setIsProcessing(true);
             
-            // Simulate a delay for processing
-            setTimeout(() => {
+            // Process the actual payment
+            return actions.order.capture().then(function(details: any) {
+              // Payment is completed - you can now record the transaction in your database
+              console.log('Transaction completed by ' + details.payer.name.given_name);
+              
               setIsProcessing(false);
               setIsComplete(true);
               
@@ -84,13 +93,13 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
                 onClose();
                 onSuccess();
               }, 2000);
-            }, 1500);
-            
-            return actions.order.capture();
+            });
           },
+          // Handle payment errors
           onError: (err: any) => {
             console.error('PayPal Error:', err);
             toast.error('There was an error processing your payment');
+            setIsProcessing(false);
           }
         }).render('#paypal-button-container');
       }
