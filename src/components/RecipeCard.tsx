@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { Printer, Share2, Plus, Minus, Utensils, ArrowDown, Sparkles, Heart, Star } from 'lucide-react';
+import { Printer, Share2, Plus, Minus, Utensils, ArrowDown, Sparkles, Heart, Star, LeafIcon, WheatOff, Milk, Egg } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import PremiumFeature from './PremiumFeature';
@@ -23,14 +22,97 @@ interface RecipeCardProps {
   isPremium?: boolean;
 }
 
+interface SubstitutionMap {
+  [key: string]: { 
+    vegan: string;
+    glutenFree: string;
+    dairyFree: string;
+  };
+}
+
 const RecipeCard = ({ recipe, isPremium = false }: RecipeCardProps) => {
   const [servings, setServings] = useState(recipe.servings);
   const [expanded, setExpanded] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [rating, setRating] = useState(0);
+  const [showSubstitutions, setShowSubstitutions] = useState(false);
+  const [activeSubstitution, setActiveSubstitution] = useState<'vegan' | 'glutenFree' | 'dairyFree' | null>(null);
   const navigate = useNavigate();
   
-  // Assign an ID to the recipe if it doesn't have one
+  // Common ingredient substitutions
+  const substitutions: SubstitutionMap = {
+    "butter": {
+      vegan: "plant-based butter or coconut oil",
+      glutenFree: "butter (naturally gluten-free)",
+      dairyFree: "plant-based butter or coconut oil"
+    },
+    "milk": {
+      vegan: "almond milk, soy milk, or oat milk",
+      glutenFree: "milk (naturally gluten-free)",
+      dairyFree: "almond milk, soy milk, or oat milk"
+    },
+    "cream": {
+      vegan: "coconut cream or cashew cream",
+      glutenFree: "cream (naturally gluten-free)",
+      dairyFree: "coconut cream or cashew cream"
+    },
+    "cheese": {
+      vegan: "plant-based cheese alternative",
+      glutenFree: "cheese (naturally gluten-free)",
+      dairyFree: "plant-based cheese alternative"
+    },
+    "flour": {
+      vegan: "all-purpose flour (naturally vegan)",
+      glutenFree: "gluten-free flour blend or almond flour",
+      dairyFree: "all-purpose flour (naturally dairy-free)"
+    },
+    "bread": {
+      vegan: "vegan bread (check ingredients)",
+      glutenFree: "gluten-free bread",
+      dairyFree: "dairy-free bread (check ingredients)"
+    },
+    "egg": {
+      vegan: "flax egg (1 tbsp ground flax + 3 tbsp water) or commercial egg replacer",
+      glutenFree: "egg (naturally gluten-free)",
+      dairyFree: "egg (naturally dairy-free)"
+    },
+    "chicken": {
+      vegan: "tofu, tempeh, or seitan",
+      glutenFree: "chicken (naturally gluten-free)",
+      dairyFree: "chicken (naturally dairy-free)"
+    },
+    "beef": {
+      vegan: "plant-based beef alternative, mushrooms, or lentils",
+      glutenFree: "beef (naturally gluten-free)",
+      dairyFree: "beef (naturally dairy-free)"
+    },
+    "yogurt": {
+      vegan: "plant-based yogurt (coconut, almond, or soy)",
+      glutenFree: "yogurt (naturally gluten-free, check flavors)",
+      dairyFree: "plant-based yogurt (coconut, almond, or soy)"
+    },
+    "cream cheese": {
+      vegan: "plant-based cream cheese alternative",
+      glutenFree: "cream cheese (naturally gluten-free)",
+      dairyFree: "plant-based cream cheese alternative"
+    },
+    "mayonnaise": {
+      vegan: "vegan mayonnaise",
+      glutenFree: "mayonnaise (naturally gluten-free)",
+      dairyFree: "mayonnaise (naturally dairy-free, check ingredients)"
+    },
+    "sour cream": {
+      vegan: "plant-based sour cream or coconut cream with lemon juice",
+      glutenFree: "sour cream (naturally gluten-free)",
+      dairyFree: "plant-based sour cream or coconut cream with lemon juice"
+    },
+    "honey": {
+      vegan: "maple syrup or agave nectar",
+      glutenFree: "honey (naturally gluten-free)",
+      dairyFree: "honey (naturally dairy-free)"
+    }
+  };
+
   useEffect(() => {
     if (!recipe.id) {
       recipe.id = `recipe-${recipe.title.toLowerCase().replace(/\s+/g, '-')}`;
@@ -97,6 +179,32 @@ const RecipeCard = ({ recipe, isPremium = false }: RecipeCardProps) => {
       saveRecipe({ ...recipe, rating: newRating });
     }
   };
+
+  const toggleSubstitutions = () => {
+    setShowSubstitutions(!showSubstitutions);
+    if (showSubstitutions) {
+      setActiveSubstitution(null);
+    }
+  };
+
+  const selectSubstitution = (type: 'vegan' | 'glutenFree' | 'dairyFree') => {
+    setActiveSubstitution(type === activeSubstitution ? null : type);
+  };
+
+  // Function to find substitutions in an ingredient string
+  const getSubstitutedIngredient = (ingredient: string): string => {
+    if (!activeSubstitution) return ingredient;
+    
+    // Check for exact matches or matches containing the ingredient name
+    for (const [key, subs] of Object.entries(substitutions)) {
+      const regex = new RegExp(`\\b${key}\\b`, 'i');
+      if (regex.test(ingredient.toLowerCase())) {
+        return ingredient.replace(regex, subs[activeSubstitution]);
+      }
+    }
+    
+    return ingredient;
+  };
   
   const scaledIngredients = recipe.ingredients.map(ingredient => {
     // Basic scaling logic for ingredients based on servings
@@ -126,6 +234,10 @@ const RecipeCard = ({ recipe, isPremium = false }: RecipeCardProps) => {
       }
     });
   });
+
+  const displayIngredients = activeSubstitution 
+    ? scaledIngredients.map(getSubstitutedIngredient)
+    : scaledIngredients;
   
   return (
     <div className={cn(
@@ -304,18 +416,68 @@ const RecipeCard = ({ recipe, isPremium = false }: RecipeCardProps) => {
               className="mb-3"
             >
               <Button 
-                variant="outline" 
+                variant={showSubstitutions ? "secondary" : "outline"}
                 size="sm"
-                className="w-full mb-4 text-sm border-culinary-beige flex items-center justify-center gap-2"
+                className={cn(
+                  "w-full mb-4 text-sm border-culinary-beige flex items-center justify-center gap-2",
+                  showSubstitutions && "bg-culinary-beige text-culinary-charcoal"
+                )}
+                onClick={toggleSubstitutions}
                 disabled={!isPremium}
               >
-                {isPremium && <Sparkles size={14} className="text-culinary-copper" />}
-                <ArrowDown size={14} className="mr-1" />
+                {showSubstitutions ? (
+                  <ArrowDown size={14} className="mr-1" />
+                ) : (
+                  <ArrowDown size={14} className="mr-1" />
+                )}
                 Dietary Substitutions
               </Button>
             </PremiumFeature>
+
+            {/* Substitution options */}
+            {isPremium && showSubstitutions && (
+              <div className="mb-4 flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant={activeSubstitution === 'vegan' ? 'default' : 'outline'}
+                  className={cn(
+                    "text-xs",
+                    activeSubstitution === 'vegan' ? "bg-green-600 hover:bg-green-700" : "border-green-600 text-green-600 hover:bg-green-50"
+                  )}
+                  onClick={() => selectSubstitution('vegan')}
+                >
+                  <LeafIcon size={14} className="mr-1" />
+                  Vegan
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeSubstitution === 'glutenFree' ? 'default' : 'outline'}
+                  className={cn(
+                    "text-xs",
+                    activeSubstitution === 'glutenFree' ? "bg-amber-600 hover:bg-amber-700" : "border-amber-600 text-amber-600 hover:bg-amber-50"
+                  )}
+                  onClick={() => selectSubstitution('glutenFree')}
+                >
+                  <WheatOff size={14} className="mr-1" />
+                  Gluten-Free
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeSubstitution === 'dairyFree' ? 'default' : 'outline'}
+                  className={cn(
+                    "text-xs",
+                    activeSubstitution === 'dairyFree' ? "bg-blue-600 hover:bg-blue-700" : "border-blue-600 text-blue-600 hover:bg-blue-50"
+                  )}
+                  onClick={() => selectSubstitution('dairyFree')}
+                >
+                  <Milk size={14} className="mr-1" />
+                  Dairy-Free
+                </Button>
+              </div>
+            )}
+
             <ul className="space-y-2">
-              {(isPremium ? scaledIngredients : recipe.ingredients).map((ingredient, index) => (
+              {displayIngredients.map((ingredient, index) => (
                 <li key={index} className="flex items-baseline gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-culinary-copper flex-shrink-0 mt-1.5"></span>
                   <span>{ingredient}</span>
