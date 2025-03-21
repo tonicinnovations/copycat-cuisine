@@ -1,13 +1,16 @@
-import { useState } from 'react';
-import { Printer, Share2, Plus, Minus, Utensils, ArrowDown, Sparkles } from 'lucide-react';
+
+import { useState, useEffect } from 'react';
+import { Printer, Share2, Plus, Minus, Utensils, ArrowDown, Sparkles, Heart, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import PremiumFeature from './PremiumFeature';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { saveRecipe, getFavoriteRecipes, removeSavedRecipe } from '@/utils/storage';
 
 interface RecipeCardProps {
   recipe: {
+    id?: string;
     title: string;
     originalSource: string;
     ingredients: string[];
@@ -23,7 +26,28 @@ interface RecipeCardProps {
 const RecipeCard = ({ recipe, isPremium = false }: RecipeCardProps) => {
   const [servings, setServings] = useState(recipe.servings);
   const [expanded, setExpanded] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [rating, setRating] = useState(0);
   const navigate = useNavigate();
+  
+  // Assign an ID to the recipe if it doesn't have one
+  useEffect(() => {
+    if (!recipe.id) {
+      recipe.id = `recipe-${recipe.title.toLowerCase().replace(/\s+/g, '-')}`;
+    }
+    
+    // Check if recipe is saved
+    const checkIfSaved = async () => {
+      const favorites = await getFavoriteRecipes();
+      const saved = favorites.find(fav => fav.id === recipe.id);
+      if (saved) {
+        setIsSaved(true);
+        setRating(saved.rating || 0);
+      }
+    };
+    
+    checkIfSaved();
+  }, [recipe]);
   
   const handlePrint = () => {
     window.print();
@@ -53,6 +77,24 @@ const RecipeCard = ({ recipe, isPremium = false }: RecipeCardProps) => {
       setServings(prev => prev + 1);
     } else if (servings > 1) {
       setServings(prev => prev - 1);
+    }
+  };
+  
+  const handleSaveRecipe = () => {
+    if (isSaved) {
+      removeSavedRecipe(recipe.id as string);
+      setIsSaved(false);
+    } else {
+      saveRecipe({ ...recipe, rating });
+      setIsSaved(true);
+    }
+  };
+  
+  const handleRating = (newRating: number) => {
+    setRating(newRating);
+    if (isSaved) {
+      // Update the saved recipe with the new rating
+      saveRecipe({ ...recipe, rating: newRating });
     }
   };
   
@@ -102,7 +144,29 @@ const RecipeCard = ({ recipe, isPremium = false }: RecipeCardProps) => {
             </p>
           </div>
           
-          <div className="flex gap-2 print:hidden">
+          <div className="flex flex-wrap gap-2 print:hidden">
+            <PremiumFeature 
+              isPremium={isPremium} 
+              featureName="Save Recipe"
+              className="inline-block"
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "flex items-center gap-1 border-culinary-beige",
+                  isSaved 
+                    ? "bg-culinary-copper/10 text-culinary-copper border-culinary-copper" 
+                    : "hover:bg-culinary-beige/30"
+                )}
+                onClick={handleSaveRecipe}
+                disabled={!isPremium}
+              >
+                <Heart size={16} fill={isSaved ? "currentColor" : "none"} />
+                <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
+              </Button>
+            </PremiumFeature>
+            
             <PremiumFeature 
               isPremium={isPremium} 
               featureName="Print Recipe"
@@ -138,6 +202,32 @@ const RecipeCard = ({ recipe, isPremium = false }: RecipeCardProps) => {
             </PremiumFeature>
           </div>
         </div>
+        
+        {isPremium && (
+          <div className="mb-6">
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-muted-foreground">Rate this recipe:</p>
+              <div className="flex items-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => handleRating(star)}
+                    className="p-1 focus:outline-none"
+                  >
+                    <Star
+                      size={20}
+                      className={cn(
+                        "text-gray-300 transition-colors",
+                        star <= rating ? "text-yellow-400 fill-yellow-400" : ""
+                      )}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="flex items-center p-3 bg-culinary-cream rounded-lg">

@@ -3,6 +3,7 @@
 const SEARCH_COUNT_KEY = 'copycat_search_count';
 const SEARCH_COUNT_DATE_KEY = 'copycat_search_count_date';
 const PREMIUM_STATUS_KEY = 'copycat_premium_status';
+const FAVORITE_RECIPES_KEY = 'copycat_favorite_recipes';
 
 // Daily search count management
 export const getSearchCount = (): number => {
@@ -66,4 +67,63 @@ export const setPremiumStatus = (status: PremiumStatus): void => {
 
 export const clearPremiumStatus = (): void => {
   localStorage.removeItem(PREMIUM_STATUS_KEY);
+};
+
+// Favorite recipes management
+export interface SavedRecipe {
+  id: string;
+  title: string;
+  originalSource: string;
+  ingredients: string[];
+  instructions: string[];
+  prepTime: string;
+  cookTime: string;
+  servings: number;
+  notes?: string;
+  rating?: number;
+  savedAt: string;
+}
+
+export const getFavoriteRecipes = (): SavedRecipe[] => {
+  const favorites = localStorage.getItem(FAVORITE_RECIPES_KEY);
+  
+  if (!favorites) {
+    return [];
+  }
+  
+  try {
+    return JSON.parse(favorites) as SavedRecipe[];
+  } catch (error) {
+    console.error('Error parsing favorite recipes:', error);
+    return [];
+  }
+};
+
+export const saveRecipe = (recipe: SavedRecipe | any): void => {
+  const favorites = getFavoriteRecipes();
+  
+  // Check if recipe is already saved
+  const existingIndex = favorites.findIndex(fav => fav.id === recipe.id);
+  
+  if (existingIndex !== -1) {
+    // Update existing recipe
+    favorites[existingIndex] = {
+      ...recipe,
+      savedAt: favorites[existingIndex].savedAt
+    };
+  } else {
+    // Add new recipe with timestamp
+    favorites.push({
+      ...recipe,
+      savedAt: new Date().toISOString()
+    });
+  }
+  
+  localStorage.setItem(FAVORITE_RECIPES_KEY, JSON.stringify(favorites));
+};
+
+export const removeSavedRecipe = (recipeId: string): void => {
+  const favorites = getFavoriteRecipes();
+  const updatedFavorites = favorites.filter(recipe => recipe.id !== recipeId);
+  localStorage.setItem(FAVORITE_RECIPES_KEY, JSON.stringify(updatedFavorites));
 };
