@@ -1,4 +1,3 @@
-
 import { Heart, Printer, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PremiumFeature from '@/components/PremiumFeature';
@@ -24,22 +23,27 @@ const RecipeHeader = ({
   onPrint,
   onShare
 }: RecipeHeaderProps) => {
-  const handleShare = async () => {
+  const handleShare = () => {
     try {
+      // Use clipboard API as the primary method since it's more widely supported
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard");
+      
+      // Optionally try Web Share API, but don't rely on it
       if (navigator.share) {
-        await navigator.share({
+        navigator.share({
           title: `${title} Recipe | CopyCat Cuisine`,
           text: `Check out this copycat recipe for ${title}!`,
           url: window.location.href,
+        }).catch((error) => {
+          // Silently catch errors from share API since we already used clipboard
+          console.log("Web Share API not available: ", error);
+          // No need for a toast here since we already showed one for clipboard
         });
-      } else {
-        // Fallback for browsers that don't support Web Share API
-        navigator.clipboard.writeText(window.location.href);
-        toast.success("Link copied to clipboard");
       }
     } catch (error) {
       console.error('Error sharing recipe:', error);
-      toast.error("Failed to share recipe");
+      toast.error("Failed to copy link to clipboard");
     }
   };
 
