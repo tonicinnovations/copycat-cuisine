@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => ({
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          // Ensure background.js is output directly to the dist root
+          // Output background.js directly to dist root folder
           return chunkInfo.name === 'background' ? '[name].js' : 'assets/[name].[hash].js';
         },
         chunkFileNames: `assets/[name].[hash].js`,
