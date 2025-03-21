@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Printer, Share2, Plus, Minus, Utensils, ArrowDown } from 'lucide-react';
+import { Printer, Share2, Plus, Minus, Utensils, ArrowDown, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import PremiumFeature from './PremiumFeature';
@@ -215,9 +215,10 @@ const RecipeCard = ({ recipe, isPremium = false }: RecipeCardProps) => {
               <Button 
                 variant="outline" 
                 size="sm"
-                className="w-full mb-4 text-sm border-culinary-beige"
+                className="w-full mb-4 text-sm border-culinary-beige flex items-center justify-center gap-2"
                 disabled={!isPremium}
               >
+                {isPremium && <Sparkles size={14} className="text-culinary-copper" />}
                 <ArrowDown size={14} className="mr-1" />
                 Dietary Substitutions
               </Button>
@@ -254,6 +255,23 @@ const RecipeCard = ({ recipe, isPremium = false }: RecipeCardProps) => {
           </div>
         )}
       </div>
+      
+      {!isPremium && (
+        <div className="bg-gradient-to-r from-culinary-copper/90 to-culinary-copper px-6 py-4 flex items-center justify-between text-white">
+          <div className="flex items-center gap-2">
+            <Sparkles size={18} className="animate-pulse" />
+            <p className="font-medium">Unlock all premium features</p>
+          </div>
+          <Button 
+            variant="secondary" 
+            size="sm"
+            className="bg-white text-culinary-copper hover:bg-white/90"
+            onClick={() => navigate('/pricing')}
+          >
+            Upgrade Now
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
