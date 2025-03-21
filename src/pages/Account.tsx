@@ -68,7 +68,7 @@ const Account = () => {
   };
   
   // Determine if the subscription can be canceled (only for monthly/yearly)
-  const canCancelSubscription = () => {
+  const canCancelSubscription = (): boolean => {
     if (!premiumStatus.isPremium) return false;
     
     // Can only cancel recurring subscriptions, not lifetime
@@ -81,7 +81,7 @@ const Account = () => {
     // Can't cancel if already canceled
     const notCanceled = premiumStatus.subscriptionStatus !== 'canceled';
     
-    return isRecurring && notCanceled && premiumStatus.subscriptionId;
+    return Boolean(isRecurring && notCanceled && premiumStatus.subscriptionId);
   };
   
   return (
