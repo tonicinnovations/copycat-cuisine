@@ -26,5 +26,5 @@ chrome.runtime.onSuspend.addListener(() => {
   console.log('CopyCat Cuisine extension suspended');
 });
 
-// Export empty object to signal this is a module
+// This is required to make the file a module
 export {};
