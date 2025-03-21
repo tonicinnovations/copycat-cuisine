@@ -157,6 +157,8 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
       }
       
       Be whimsical, fun, and helpful in the response. Use a conversational tone if writing notes or a not found message.
+      Research widely, if it's a restaurant recipe that might be popular try your best to find it.
+      Be thorough and accurate in your research of famous copycat recipes.
     `;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -173,8 +175,8 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
             content: prompt
           }
         ],
-        temperature: 0.7,
-        max_tokens: 2000
+        temperature: 0.5,
+        max_tokens: 2500
       })
     });
 
