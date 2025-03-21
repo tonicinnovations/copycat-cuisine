@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '@/components/NavBar';
 import PaymentModal from '@/components/PaymentModal';
-import { getPremiumStatus, setPremiumStatus } from '@/utils/storage';
+import { getPremiumStatus, setPremiumStatus, getSubscriptionDetails } from '@/utils/storage';
 import { toast } from 'sonner';
 
 // Import refactored components
@@ -22,13 +22,30 @@ const Pricing = () => {
   } | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [subscriptionDetails, setSubscriptionDetails] = useState<{id: string | null, period: string | null}>({
+    id: null,
+    period: null
+  });
   
   useEffect(() => {
     const status = getPremiumStatus();
     setIsPremium(status.isPremium);
+    
+    const details = getSubscriptionDetails();
+    setSubscriptionDetails(details);
   }, []);
   
   const handleSelectPlan = (name: string, price: string, period: string) => {
+    // Check if user is trying to switch between subscription types
+    if (isPremium && subscriptionDetails.id && subscriptionDetails.period !== period) {
+      // They have an existing subscription of a different type
+      toast.info(
+        `You currently have a ${subscriptionDetails.period} subscription. Please cancel it before switching.`,
+        { duration: 5000 }
+      );
+      return;
+    }
+    
     setSelectedPlan({ name, price, period });
     setShowPaymentModal(true);
   };
@@ -47,10 +64,15 @@ const Pricing = () => {
       expiryDate.setFullYear(now.getFullYear() + 100);
     }
     
+    // Get subscription ID if it exists in localStorage
+    const subscriptionId = localStorage.getItem('copycat_subscription_id');
+    
     setPremiumStatus({
       isPremium: true,
       plan: selectedPlan?.name,
-      expiresAt: expiryDate.toISOString()
+      expiresAt: expiryDate.toISOString(),
+      subscriptionId: subscriptionId || undefined,
+      subscriptionStatus: 'active'
     });
     
     setIsPremium(true);

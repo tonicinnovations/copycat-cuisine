@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -41,8 +40,8 @@ const PayPalButton = ({
   useEffect(() => {
     if (!paypalLoaded && !window.paypal) {
       const script = document.createElement('script');
-      // Use production PayPal SDK with your client ID
-      script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
+      // Use production PayPal SDK with your client ID and include vault=true for subscriptions
+      script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=subscription&vault=true`;
       script.addEventListener('load', () => {
         setPaypalLoaded(true);
       });
@@ -64,25 +63,48 @@ const PayPalButton = ({
         paypalButtonsContainer.innerHTML = '';
         
         window.paypal.Buttons({
-          // Create order with the actual amount from the selected plan
-          createOrder: (data: any, actions: any) => {
-            return actions.order.create({
-              purchase_units: [{
-                amount: {
-                  value: plan.price.replace('$', '')
-                },
-                description: `CopyCat Cuisine ${plan.name} Plan`
-              }]
+          // Create subscription instead of one-time order
+          createSubscription: (data: any, actions: any) => {
+            // Get the numerical price without the $ sign
+            const priceValue = plan.price.replace('$', '');
+            
+            // For lifetime plan, continue using one-time payment
+            if (plan.period === 'lifetime' || plan.period === 'one-time') {
+              return actions.order.create({
+                purchase_units: [{
+                  amount: {
+                    value: priceValue
+                  },
+                  description: `CopyCat Cuisine ${plan.name} Plan (One-time)`
+                }]
+              });
+            }
+            
+            // Otherwise create a subscription
+            return actions.subscription.create({
+              plan_id: getPlanIdByPeriod(plan.period),
+              custom_id: `CopyCat_${plan.name}_${Date.now()}`, // Unique identifier
+              subscriber: {
+                name: {
+                  given_name: "CopyCat",
+                  surname: "Customer"
+                }
+              }
             });
           },
           // Handle successful payment
           onApprove: (data: any, actions: any) => {
             onProcessingChange(true);
             
-            // Process the actual payment
-            return actions.order.capture().then(function(details: any) {
-              // Payment is completed - you can now record the transaction in your database
-              console.log('Transaction completed by ' + details.payer.name.given_name);
+            // Store subscription/order ID for later management
+            const subscriptionId = data.subscriptionID || data.orderID;
+            
+            // Verify the subscription or order was created successfully
+            const verifyPayment = () => {
+              // In a production environment, you would validate this on your server
+              console.log('Payment successful. ID:', subscriptionId);
+              localStorage.setItem('copycat_subscription_id', subscriptionId);
+              localStorage.setItem('copycat_subscription_period', plan.period);
               
               onProcessingChange(false);
               onComplete();
@@ -91,7 +113,15 @@ const PayPalButton = ({
               setTimeout(() => {
                 onSuccess();
               }, 2000);
-            });
+            };
+            
+            // For one-time payments we need to capture the payment
+            if (plan.period === 'lifetime' || plan.period === 'one-time') {
+              return actions.order.capture().then(verifyPayment);
+            } else {
+              // For subscriptions, no need to capture
+              verifyPayment();
+            }
           },
           // Handle payment errors
           onError: (err: any) => {
@@ -99,11 +129,30 @@ const PayPalButton = ({
             toast.error('There was an error processing your payment');
             onProcessingChange(false);
             if (onError) onError(err);
+          },
+          // Handle cancellation
+          onCancel: () => {
+            toast.info('Payment was cancelled');
+            onProcessingChange(false);
           }
         }).render('#paypal-button-container');
       }
     }
   }, [paypalLoaded, plan, onSuccess, onProcessingChange, onComplete, onError]);
+  
+  // Helper function to map period to plan IDs
+  // In a real app, these would be actual PayPal plan IDs created in your PayPal dashboard
+  const getPlanIdByPeriod = (period: string): string => {
+    // These are placeholder IDs. You would replace these with real plan IDs from PayPal
+    switch (period) {
+      case 'month':
+        return 'P-1MA123456789'; // Replace with real PayPal plan ID for monthly
+      case 'year':
+        return 'P-1YR123456789'; // Replace with real PayPal plan ID for yearly
+      default:
+        return 'P-1MT123456789'; // Default fallback plan
+    }
+  };
   
   return (
     <div>
@@ -115,7 +164,9 @@ const PayPalButton = ({
         </div>
       )}
       <p className="text-xs text-center text-muted-foreground mt-3">
-        You will be redirected to PayPal to complete your payment.
+        {plan.period === 'lifetime' || plan.period === 'one-time' 
+          ? 'You will be redirected to PayPal to complete your one-time payment.'
+          : 'You will be redirected to PayPal to set up your subscription.'}
       </p>
     </div>
   );

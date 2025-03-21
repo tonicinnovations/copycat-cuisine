@@ -1,8 +1,11 @@
+
 // Constants
 const SEARCH_COUNT_KEY = 'copycat_search_count';
 const SEARCH_COUNT_DATE_KEY = 'copycat_search_count_date';
 const PREMIUM_STATUS_KEY = 'copycat_premium_status';
 const FAVORITE_RECIPES_KEY = 'copycat_favorite_recipes';
+const SUBSCRIPTION_ID_KEY = 'copycat_subscription_id';
+const SUBSCRIPTION_PERIOD_KEY = 'copycat_subscription_period';
 const FREE_SEARCH_LIMIT = 10; // Increased from 3 to 10 for testing
 
 // Daily search count management
@@ -39,10 +42,13 @@ export interface PremiumStatus {
   isPremium: boolean;
   plan?: string;
   expiresAt?: string;
+  subscriptionId?: string; // Added for subscription management
+  subscriptionStatus?: 'active' | 'canceled' | 'expired';
 }
 
 export const getPremiumStatus = (): PremiumStatus => {
   const status = localStorage.getItem(PREMIUM_STATUS_KEY);
+  const subscriptionId = localStorage.getItem(SUBSCRIPTION_ID_KEY);
   
   if (!status) {
     return { isPremium: false };
@@ -51,11 +57,25 @@ export const getPremiumStatus = (): PremiumStatus => {
   try {
     const parsedStatus = JSON.parse(status) as PremiumStatus;
     
+    // Add subscription ID if it exists
+    if (subscriptionId) {
+      parsedStatus.subscriptionId = subscriptionId;
+    }
+    
     // Check if premium status has expired
     if (parsedStatus.expiresAt && new Date(parsedStatus.expiresAt) < new Date()) {
-      // Premium has expired, reset status
-      localStorage.removeItem(PREMIUM_STATUS_KEY);
-      return { isPremium: false };
+      // Premium has expired, reset status but maintain subscription info for history
+      if (parsedStatus.subscriptionId) {
+        // Only mark as expired if we had a subscription
+        parsedStatus.isPremium = false;
+        parsedStatus.subscriptionStatus = 'expired';
+        localStorage.setItem(PREMIUM_STATUS_KEY, JSON.stringify(parsedStatus));
+        return parsedStatus;
+      } else {
+        // No subscription, just clear it
+        localStorage.removeItem(PREMIUM_STATUS_KEY);
+        return { isPremium: false };
+      }
     }
     
     return parsedStatus;
@@ -66,11 +86,43 @@ export const getPremiumStatus = (): PremiumStatus => {
 };
 
 export const setPremiumStatus = (status: PremiumStatus): void => {
+  // Save subscription ID separately if provided
+  if (status.subscriptionId) {
+    localStorage.setItem(SUBSCRIPTION_ID_KEY, status.subscriptionId);
+  }
+  
+  // Save subscription period if available in status
+  if (status.plan) {
+    const period = status.plan.toLowerCase();
+    if (period.includes('month') || period.includes('year') || period.includes('life')) {
+      localStorage.setItem(SUBSCRIPTION_PERIOD_KEY, period);
+    }
+  }
+  
   localStorage.setItem(PREMIUM_STATUS_KEY, JSON.stringify(status));
+};
+
+export const getSubscriptionDetails = () => {
+  return {
+    id: localStorage.getItem(SUBSCRIPTION_ID_KEY) || null,
+    period: localStorage.getItem(SUBSCRIPTION_PERIOD_KEY) || null
+  };
+};
+
+export const cancelSubscription = (): void => {
+  const status = getPremiumStatus();
+  
+  // Update status to canceled but maintain premium access until expiry
+  if (status.isPremium && status.subscriptionId) {
+    status.subscriptionStatus = 'canceled';
+    localStorage.setItem(PREMIUM_STATUS_KEY, JSON.stringify(status));
+  }
 };
 
 export const clearPremiumStatus = (): void => {
   localStorage.removeItem(PREMIUM_STATUS_KEY);
+  localStorage.removeItem(SUBSCRIPTION_ID_KEY);
+  localStorage.removeItem(SUBSCRIPTION_PERIOD_KEY);
 };
 
 // Favorite recipes management
