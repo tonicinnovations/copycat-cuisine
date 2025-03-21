@@ -1,3 +1,4 @@
+
 /// <reference types="chrome"/>
 
 // This is a basic background script for the Chrome extension
@@ -25,5 +26,5 @@ chrome.runtime.onSuspend.addListener(() => {
   console.log('CopyCat Cuisine extension suspended');
 });
 
-// Need to export an empty object for Vite to handle this as a module
+// Export empty object to signal this is a module
 export {};
