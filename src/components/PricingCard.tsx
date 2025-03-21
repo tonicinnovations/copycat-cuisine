@@ -35,14 +35,6 @@ const PricingCard = ({
           : "bg-white/75 border-culinary-beige shadow-sm"
       )}
     >
-      {isPopular && (
-        <div className="absolute top-0 right-0 w-32 h-32 overflow-hidden">
-          <div className="absolute top-5 right-[-15px] transform rotate-45 bg-culinary-copper text-white text-xs font-medium py-1 px-10 shadow-md">
-            Most Popular
-          </div>
-        </div>
-      )}
-      
       <div className="p-6 flex-1">
         <h3 className="text-xl font-display font-medium mb-1">{title}</h3>
         <p className="text-muted-foreground mb-4 text-sm">{description}</p>
