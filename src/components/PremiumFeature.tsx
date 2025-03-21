@@ -64,7 +64,7 @@ const PremiumFeature = ({
             </div>
           </div>
         </TooltipTrigger>
-        <TooltipContent side="top" className="bg-white border border-culinary-beige shadow-lg p-2">
+        <TooltipContent side="bottom" align="center" className="bg-white border border-culinary-beige shadow-lg p-2">
           <div className="flex items-start space-x-3 p-2">
             <div className="bg-culinary-copper/10 p-2 rounded-full">
               <Sparkles size={16} className="text-culinary-copper" />

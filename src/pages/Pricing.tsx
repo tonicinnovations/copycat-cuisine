@@ -237,12 +237,6 @@ const Pricing = () => {
             />
           </div>
         </div>
-        
-        <div className="mt-16 text-center">
-          <p className="text-muted-foreground">
-            All plans include a 30-day money-back guarantee. No questions asked.
-          </p>
-        </div>
       </main>
       
       <footer className="py-6 border-t border-culinary-beige bg-white">
