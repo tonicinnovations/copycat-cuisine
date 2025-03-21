@@ -135,7 +135,9 @@ export const getRecipe = async (query: string): Promise<any> => {
 const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<any> => {
   try {
     const prompt = `
-      Create a copycat recipe for "${query}" that would be found at a restaurant or store.
+      You are an expert chef specializing in recreating famous restaurant dishes. Please provide an authentic copycat recipe for "${query}".
+      
+      I need you to carefully research this dish. Pay special attention to restaurant chains like "Steak and Ale" which was a popular steakhouse chain with dishes like the "Kensington Club" steak.
       
       The response should be in JSON format with the following structure:
       {
@@ -159,6 +161,8 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
       Be whimsical, fun, and helpful in the response. Use a conversational tone if writing notes or a not found message.
       Research widely, if it's a restaurant recipe that might be popular try your best to find it.
       Be thorough and accurate in your research of famous copycat recipes.
+      
+      Remember: Steak and Ale was a restaurant chain founded in 1966 with popular dishes including the Kensington Club Steak - it's essential you check for this specifically if the query mentions it.
     `;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -171,12 +175,16 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
         model: 'gpt-4o',
         messages: [
           {
+            role: 'system',
+            content: 'You are a culinary historian and expert chef who specializes in recreating famous restaurant recipes with perfect accuracy. Your knowledge of restaurant chains is extensive and includes chains that no longer exist, like Steak and Ale.'
+          },
+          {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.5,
-        max_tokens: 2500
+        temperature: 0.3,
+        max_tokens: 3000
       })
     });
 
