@@ -1,9 +1,9 @@
-
 // Constants
 const SEARCH_COUNT_KEY = 'copycat_search_count';
 const SEARCH_COUNT_DATE_KEY = 'copycat_search_count_date';
 const PREMIUM_STATUS_KEY = 'copycat_premium_status';
 const FAVORITE_RECIPES_KEY = 'copycat_favorite_recipes';
+const FREE_SEARCH_LIMIT = 10; // Increased from 3 to 10 for testing
 
 // Daily search count management
 export const getSearchCount = (): number => {
@@ -28,6 +28,10 @@ export const incrementSearchCount = (): void => {
   
   localStorage.setItem(SEARCH_COUNT_KEY, (currentCount + 1).toString());
   localStorage.setItem(SEARCH_COUNT_DATE_KEY, today);
+};
+
+export const getFreeSearchLimit = (): number => {
+  return FREE_SEARCH_LIMIT;
 };
 
 // Premium status management

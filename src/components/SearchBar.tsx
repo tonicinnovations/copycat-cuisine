@@ -4,7 +4,7 @@ import { Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { getSearchCount, incrementSearchCount } from '@/utils/storage';
+import { getSearchCount, incrementSearchCount, getFreeSearchLimit } from '@/utils/storage';
 
 interface SearchBarProps {
   isPremium?: boolean;
@@ -16,6 +16,7 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const freeSearchLimit = getFreeSearchLimit();
 
   // Auto-focus effect
   useEffect(() => {
@@ -36,7 +37,7 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
     // Search limit check for free users
     if (!isPremium) {
       const searchCount = getSearchCount();
-      if (searchCount >= 3) {
+      if (searchCount >= freeSearchLimit) {
         toast.error(
           "You've reached your daily search limit", 
           {
@@ -126,7 +127,7 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
         {!isPremium && (
           <span className="inline-flex items-center">
             <span className="relative px-2 py-1 bg-muted rounded-full text-xs font-medium">
-              {3 - getSearchCount()} of 3 free searches left today
+              {freeSearchLimit - getSearchCount()} of {freeSearchLimit} free searches left today
             </span>
           </span>
         )}
