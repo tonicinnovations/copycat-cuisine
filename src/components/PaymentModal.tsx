@@ -1,11 +1,12 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Loader2, CreditCard, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface PaymentModalProps {
   open: boolean;
@@ -18,10 +19,83 @@ interface PaymentModalProps {
   onSuccess: () => void;
 }
 
+declare global {
+  interface Window {
+    paypal?: {
+      Buttons: (options: any) => {
+        render: (element: string | HTMLElement) => void;
+      };
+    };
+  }
+}
+
 const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => {
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [paypalLoaded, setPaypalLoaded] = useState(false);
+  
+  // Load PayPal SDK when the modal opens and paypal is selected
+  useEffect(() => {
+    if (open && paymentMethod === 'paypal' && !paypalLoaded && !window.paypal) {
+      const script = document.createElement('script');
+      script.src = "https://www.paypal.com/sdk/js?client-id=sb&currency=USD";
+      script.addEventListener('load', () => {
+        setPaypalLoaded(true);
+      });
+      document.body.appendChild(script);
+      
+      return () => {
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
+      };
+    }
+  }, [open, paymentMethod, paypalLoaded]);
+  
+  // Initialize PayPal buttons when the SDK is loaded
+  useEffect(() => {
+    if (paypalLoaded && window.paypal && plan && paymentMethod === 'paypal') {
+      const paypalButtonsContainer = document.getElementById('paypal-button-container');
+      if (paypalButtonsContainer) {
+        paypalButtonsContainer.innerHTML = '';
+        
+        window.paypal.Buttons({
+          createOrder: (data: any, actions: any) => {
+            // This is a demo, so we're using the sandbox environment
+            return actions.order.create({
+              purchase_units: [{
+                amount: {
+                  value: plan.price.replace('$', '')
+                }
+              }]
+            });
+          },
+          onApprove: (data: any, actions: any) => {
+            setIsProcessing(true);
+            
+            // Simulate a delay for processing
+            setTimeout(() => {
+              setIsProcessing(false);
+              setIsComplete(true);
+              
+              // After showing success state, close modal and call success callback
+              setTimeout(() => {
+                onClose();
+                onSuccess();
+              }, 2000);
+            }, 1500);
+            
+            return actions.order.capture();
+          },
+          onError: (err: any) => {
+            console.error('PayPal Error:', err);
+            toast.error('There was an error processing your payment');
+          }
+        }).render('#paypal-button-container');
+      }
+    }
+  }, [paypalLoaded, plan, paymentMethod, onClose, onSuccess]);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,6 +150,7 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
               defaultValue="card" 
               className="px-6"
               onValueChange={(value) => setPaymentMethod(value as 'card' | 'paypal')}
+              value={paymentMethod}
             >
               <TabsList className="grid grid-cols-2 mb-4">
                 <TabsTrigger value="card" className="flex items-center gap-2">
@@ -162,20 +237,24 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
                   </div>
                 </div>
                 
-                <Button 
-                  onClick={handleSubmit}
-                  className="w-full bg-[#0070BA] hover:bg-[#005ea6]"
-                  disabled={isProcessing}
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    "Pay with PayPal"
-                  )}
-                </Button>
+                {paypalLoaded ? (
+                  <div id="paypal-button-container" className="w-full min-h-[150px]"></div>
+                ) : (
+                  <Button 
+                    onClick={handleSubmit}
+                    className="w-full bg-[#0070BA] hover:bg-[#005ea6]"
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      "Pay with PayPal"
+                    )}
+                  </Button>
+                )}
                 <p className="text-xs text-center text-muted-foreground mt-3">
                   You will be redirected to PayPal to complete your payment.
                 </p>
