@@ -26,8 +26,12 @@ const Index = () => {
             transition={{ duration: 0.6 }}
             className="mb-6"
           >
-            <div className="w-20 h-20 bg-culinary-beige rounded-full flex items-center justify-center mx-auto mb-4">
-              <ChefHat size={32} className="text-culinary-copper" />
+            <div className="w-48 h-48 mx-auto mb-4">
+              <img 
+                src="/lovable-uploads/45991af9-3aa8-4df7-b085-571cb0bd1a65.png" 
+                alt="Chef Cat" 
+                className="w-full h-full object-contain"
+              />
             </div>
             <motion.h1 
               className="text-4xl md:text-5xl lg:text-6xl font-display font-medium mb-4 text-culinary-charcoal"
