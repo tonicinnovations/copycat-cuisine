@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import NavBar from '@/components/NavBar';
+import CancelSubscriptionButton from '@/components/payment/CancelSubscriptionButton';
 import { 
   getPremiumStatus, 
   clearPremiumStatus, 
@@ -49,13 +50,14 @@ const Account = () => {
   const handleCancelSubscription = () => {
     cancelSubscription();
     
-    // In a real app, you would also call to your backend to cancel the subscription with PayPal
-    toast.success("Your subscription has been canceled. You will have access until your current billing period ends.");
-    setShowCancelDialog(false);
-    
     // Update local state
     const updatedStatus = getPremiumStatus();
     setPremiumStatus(updatedStatus);
+    
+    setShowCancelDialog(false);
+    
+    // If the user canceled through PayPal directly, this will update our local state
+    toast.success("Your subscription has been canceled. You will have access until your current billing period ends.");
   };
   
   const formatDate = (dateString?: string) => {
@@ -83,7 +85,7 @@ const Account = () => {
     // Can't cancel if already canceled
     const notCanceled = premiumStatus.subscriptionStatus !== 'canceled';
     
-    return isRecurring && notCanceled;
+    return isRecurring && notCanceled && premiumStatus.subscriptionId;
   };
   
   return (
@@ -211,13 +213,36 @@ const Account = () => {
               Are you sure you want to cancel your subscription? You'll still have access to premium features until the end of your current billing period.
             </DialogDescription>
           </DialogHeader>
+          
+          {/* Updated dialog content with PayPal cancellation */}
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground mb-4">
+              Your subscription will be canceled through PayPal. You will not be charged for the next billing period.
+            </p>
+            
+            {premiumStatus.subscriptionId && (
+              <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-amber-800 text-sm mb-4">
+                <p className="font-medium">Important</p>
+                <p>This will cancel your PayPal subscription. This action cannot be undone.</p>
+              </div>
+            )}
+          </div>
+          
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCancelDialog(false)}>
               Keep Subscription
             </Button>
-            <Button variant="destructive" onClick={handleCancelSubscription}>
-              Yes, Cancel
-            </Button>
+            
+            {premiumStatus.subscriptionId ? (
+              <CancelSubscriptionButton 
+                subscriptionId={premiumStatus.subscriptionId}
+                onCancelled={handleCancelSubscription}
+              />
+            ) : (
+              <Button variant="destructive" onClick={handleCancelSubscription}>
+                Yes, Cancel
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
