@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -141,16 +142,15 @@ const PayPalButton = ({
   }, [paypalLoaded, plan, onSuccess, onProcessingChange, onComplete, onError]);
   
   // Helper function to map period to plan IDs
-  // In a real app, these would be actual PayPal plan IDs created in your PayPal dashboard
   const getPlanIdByPeriod = (period: string): string => {
-    // These are placeholder IDs. You would replace these with real plan IDs from PayPal
+    // Updated with real PayPal plan IDs
     switch (period) {
       case 'month':
-        return 'P-1MA123456789'; // Replace with real PayPal plan ID for monthly
+        return 'P-3R5088386K011274RM5OOAPQ'; // Real monthly subscription plan ID
       case 'year':
-        return 'P-1YR123456789'; // Replace with real PayPal plan ID for yearly
+        return 'P-17100272W1733731XM5OOCMI'; // Real annual subscription plan ID
       default:
-        return 'P-1MT123456789'; // Default fallback plan
+        return 'P-3R5088386K011274RM5OOAPQ'; // Default to monthly as fallback
     }
   };
   
