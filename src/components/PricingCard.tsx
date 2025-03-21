@@ -36,8 +36,8 @@ const PricingCard = ({
       )}
     >
       {isPopular && (
-        <div className="absolute top-0 right-0 w-40 h-40 overflow-hidden">
-          <div className="absolute top-0 right-0 transform translate-x-1/3 -translate-y-1/2 rotate-45 bg-culinary-copper text-white text-xs font-medium py-1 px-10 shadow-md">
+        <div className="absolute top-0 right-0 w-40 h-20 overflow-hidden">
+          <div className="absolute top-0 right-0 transform translate-x-1/4 rotate-45 bg-culinary-copper text-white text-xs font-medium py-1 px-10 shadow-md">
             Most Popular
           </div>
         </div>
