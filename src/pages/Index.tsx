@@ -1,10 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ChefHat } from 'lucide-react';
+import { ChefHat, Sparkles } from 'lucide-react';
 import NavBar from '@/components/NavBar';
 import SearchBar from '@/components/SearchBar';
-import { getPremiumStatus } from '@/utils/storage';
+import { getPremiumStatus, setPremiumStatus } from '@/utils/storage';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const Index = () => {
   const [isPremium, setIsPremium] = useState(false);
@@ -13,6 +15,21 @@ const Index = () => {
     const status = getPremiumStatus();
     setIsPremium(status.isPremium);
   }, []);
+  
+  const enablePremium = () => {
+    // Set premium status with a far future expiry date
+    const expiryDate = new Date();
+    expiryDate.setFullYear(expiryDate.getFullYear() + 100);
+    
+    setPremiumStatus({
+      isPremium: true,
+      plan: "Testing",
+      expiresAt: expiryDate.toISOString()
+    });
+    
+    setIsPremium(true);
+    toast.success("Premium access enabled for testing");
+  };
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-culinary-cream to-white">
@@ -33,6 +50,25 @@ const Index = () => {
                 className="w-full h-full object-contain"
               />
             </div>
+            
+            {/* Test Premium Button */}
+            {!isPremium && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="mb-4"
+              >
+                <Button
+                  onClick={enablePremium}
+                  className="bg-culinary-copper hover:bg-culinary-copper/90 transition-colors mb-4 flex items-center gap-2"
+                >
+                  <Sparkles size={16} className="text-white" />
+                  <span>Enable Premium for Testing</span>
+                </Button>
+              </motion.div>
+            )}
+            
             <motion.h1 
               className="text-4xl md:text-5xl lg:text-6xl font-display font-medium mb-4 text-culinary-charcoal"
               initial={{ opacity: 0 }}
