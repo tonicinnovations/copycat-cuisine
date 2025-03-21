@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +6,7 @@ import NavBar from '@/components/NavBar';
 import PricingCard from '@/components/PricingCard';
 import PaymentModal from '@/components/PaymentModal';
 import { getPremiumStatus, setPremiumStatus } from '@/utils/storage';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 const Pricing = () => {
   const navigate = useNavigate();

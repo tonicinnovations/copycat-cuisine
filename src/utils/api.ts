@@ -1,5 +1,4 @@
-
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 // Simulated sample responses for recipes
 const sampleResponses: Record<string, any> = {
