@@ -5,5 +5,10 @@ import './index.css'
 
 // Make sure DOM is loaded before rendering (important for Chrome extensions)
 document.addEventListener('DOMContentLoaded', () => {
-  createRoot(document.getElementById("root")!).render(<App />);
+  const rootElement = document.getElementById("root");
+  if (rootElement) {
+    createRoot(rootElement).render(<App />);
+  } else {
+    console.error("Root element not found");
+  }
 });

@@ -20,16 +20,18 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // Enhanced build configuration for Chrome extension
   build: {
-    // Ensure we don't inline assets for Chrome extension
     assetsInlineLimit: 0,
-    // Output to dist directory
     outDir: "dist",
-    // Don't use hashed filenames for Chrome extension
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+        background: path.resolve(__dirname, "src/background.ts"),
+      },
       output: {
-        entryFileNames: `assets/[name].js`,
+        entryFileNames: (chunkInfo) => {
+          return chunkInfo.name === 'background' ? 'assets/background.js' : 'assets/[name].js';
+        },
         chunkFileNames: `assets/[name].js`,
         assetFileNames: `assets/[name].[ext]`
       }
