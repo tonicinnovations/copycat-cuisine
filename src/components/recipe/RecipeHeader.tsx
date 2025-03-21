@@ -3,6 +3,7 @@ import { Heart, Printer, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PremiumFeature from '@/components/PremiumFeature';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface RecipeHeaderProps {
   title: string;
@@ -23,6 +24,25 @@ const RecipeHeader = ({
   onPrint,
   onShare
 }: RecipeHeaderProps) => {
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${title} Recipe | CopyCat Cuisine`,
+          text: `Check out this copycat recipe for ${title}!`,
+          url: window.location.href,
+        });
+      } else {
+        // Fallback for browsers that don't support Web Share API
+        navigator.clipboard.writeText(window.location.href);
+        toast.success("Link copied to clipboard");
+      }
+    } catch (error) {
+      console.error('Error sharing recipe:', error);
+      toast.error("Failed to share recipe");
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
       <div>
@@ -83,7 +103,7 @@ const RecipeHeader = ({
             variant="outline"
             size="sm"
             className="flex items-center gap-1 border-culinary-beige hover:bg-culinary-beige/30"
-            onClick={onShare}
+            onClick={handleShare}
             disabled={!isPremium}
           >
             <Share2 size={16} />
