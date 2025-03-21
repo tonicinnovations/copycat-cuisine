@@ -1,4 +1,5 @@
 import { toast } from 'sonner';
+import { getApiKey } from '@/components/ApiKeyForm';
 
 // Simulated sample responses for recipes
 const sampleResponses: Record<string, any> = {
@@ -121,8 +122,16 @@ const sampleResponses: Record<string, any> = {
   }
 };
 
-// Function to get recipes - simulates API call to ChatGPT
+// Function to get recipes - uses real ChatGPT API if available, falls back to simulation
 export const getRecipe = async (query: string): Promise<any> => {
+  const apiKey = getApiKey();
+  
+  // If we have an API key, use the real ChatGPT API
+  if (apiKey) {
+    return fetchRecipeFromChatGPT(query, apiKey);
+  }
+  
+  // Otherwise, use the simulated responses
   return new Promise((resolve, reject) => {
     // Simulate API delay
     setTimeout(() => {
@@ -152,6 +161,90 @@ export const getRecipe = async (query: string): Promise<any> => {
       });
     }, 1500);
   });
+};
+
+// Function to fetch a recipe from ChatGPT
+const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<any> => {
+  try {
+    const prompt = `
+      Create a copycat recipe for "${query}" that would be found at a restaurant or store.
+      
+      The response should be in JSON format with the following structure:
+      {
+        "title": "Copycat [Restaurant/Store] [Recipe Name]",
+        "originalSource": "[Restaurant/Store Name]",
+        "ingredients": ["ingredient 1", "ingredient 2", ...],
+        "instructions": ["step 1", "step 2", ...],
+        "prepTime": "[prep time in minutes]",
+        "cookTime": "[cook time in minutes]",
+        "servings": [number of servings],
+        "notes": "[any special notes or tips]",
+        "videoUrl": "[optional YouTube embed URL for a similar recipe]"
+      }
+      
+      If you don't know a copycat recipe for this query, respond with a JSON object containing:
+      {
+        "notFound": true,
+        "query": "${query}",
+        "message": "[a whimsical and fun message about not finding the recipe]"
+      }
+      
+      Be whimsical, fun, and helpful in the response. Use a conversational tone if writing notes or a not found message.
+    `;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('ChatGPT API error:', error);
+      throw new Error(error.error?.message || 'Failed to fetch recipe from ChatGPT');
+    }
+
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+    
+    try {
+      // Extract the JSON object from the response
+      // (ChatGPT might wrap the JSON in markdown code blocks)
+      const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || 
+                        content.match(/```\n([\s\S]*?)\n```/) || 
+                        [null, content];
+      const jsonStr = jsonMatch[1] || content;
+      const recipeData = JSON.parse(jsonStr);
+      
+      return recipeData;
+    } catch (parseError) {
+      console.error('Error parsing ChatGPT response:', parseError);
+      console.log('Raw response:', content);
+      throw new Error('Failed to parse ChatGPT response');
+    }
+  } catch (error) {
+    console.error('Error fetching recipe from ChatGPT:', error);
+    
+    // Fallback to simulated not found
+    return {
+      notFound: true,
+      query,
+      message: `I tried to ask ChatGPT for this recipe, but encountered an error: ${error.message}. Please check your API key or try again later.`
+    };
+  }
 };
 
 // Generate a fun, whimsical message when a recipe is not found

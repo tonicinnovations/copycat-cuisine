@@ -61,15 +61,14 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
           incrementSearchCount();
         }
         navigate(`/recipe/${encodeURIComponent(query)}`);
+        setIsLoading(false);
       }, 1500);
     } catch (error) {
       console.error('Search error:', error);
       toast.error("Couldn't find that recipe", {
         description: "Please try a different search term"
       });
-    } finally {
-      // In a real implementation, this would happen after the API call completes
-      // setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
