@@ -1,4 +1,6 @@
 
+/// <reference types="chrome"/>
+
 // This is a basic background script for the Chrome extension
 // It will run in the background when the extension is installed
 
