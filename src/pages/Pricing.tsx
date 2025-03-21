@@ -88,7 +88,6 @@ const Pricing = () => {
                 <PremiumFeature>Print recipes</PremiumFeature>
                 <PremiumFeature>Share recipes</PremiumFeature>
                 <PremiumFeature>Adjust portion sizes</PremiumFeature>
-                <PremiumFeature>Access to video tutorials</PremiumFeature>
                 <PremiumFeature>Dietary substitutions</PremiumFeature>
               </ul>
             </div>
@@ -146,7 +145,6 @@ const Pricing = () => {
                 "Print recipes",
                 "Share recipes", 
                 "Adjust portion sizes",
-                "Access to video tutorials",
                 "Dietary substitutions"
               ]}
               ctaText="Subscribe Monthly"
@@ -169,7 +167,6 @@ const Pricing = () => {
                 "Print recipes",
                 "Share recipes", 
                 "Adjust portion sizes",
-                "Access to video tutorials",
                 "Dietary substitutions",
                 "Priority customer support"
               ]}
@@ -194,7 +191,6 @@ const Pricing = () => {
                 "Print recipes",
                 "Share recipes", 
                 "Adjust portion sizes",
-                "Access to video tutorials",
                 "Dietary substitutions",
                 "Priority customer support",
                 "Free future updates"
@@ -222,10 +218,6 @@ const Pricing = () => {
             <Feature 
               title="Adjust Portion Sizes" 
               description="Scale recipes up or down to get the perfect amount for your needs."
-            />
-            <Feature 
-              title="Video Tutorials" 
-              description="Access video guides that show you exactly how to make each recipe."
             />
             <Feature 
               title="Dietary Substitutions" 
