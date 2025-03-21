@@ -1,8 +1,9 @@
+
 import { toast } from "sonner";
 import { getPremiumStatus } from "./storage";
 
 // Hardcoded OpenAI API key
-const OPENAI_API_KEY = "your-api-key-goes-here"; // Replace this with your actual API key
+const OPENAI_API_KEY = "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"; // Real API key
 
 // Simulated sample responses for recipes
 const sampleResponses: Record<string, any> = {
