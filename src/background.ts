@@ -25,4 +25,5 @@ chrome.runtime.onSuspend.addListener(() => {
   console.log('CopyCat Cuisine extension suspended');
 });
 
-export {}
+// Need to export an empty object for Vite to handle this as a module
+export {};
