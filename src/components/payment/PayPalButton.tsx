@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Your PayPal client ID - Replace this with your actual production client ID
-const PAYPAL_CLIENT_ID = "YOUR_PRODUCTION_CLIENT_ID";
+// Your PayPal client ID - Production client ID
+const PAYPAL_CLIENT_ID = "AWlG0jsULIbL7Un-uRUaB88Q_zn8Vu09fpwqI-sm9p9iV0IdgiASJwFUQvX3slmCYAuXRn9UrudgwVx5";
 
 interface PayPalButtonProps {
   plan: {
