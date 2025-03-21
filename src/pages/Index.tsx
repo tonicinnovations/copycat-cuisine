@@ -26,7 +26,7 @@ const Index = () => {
             transition={{ duration: 0.6 }}
             className="mb-6"
           >
-            <div className="w-48 h-48 mx-auto mb-4">
+            <div className="w-48 h-48 mx-auto mb-4 bg-gradient-to-b from-culinary-cream to-white rounded-full flex items-center justify-center">
               <img 
                 src="/lovable-uploads/45991af9-3aa8-4df7-b085-571cb0bd1a65.png" 
                 alt="Chef Cat" 
