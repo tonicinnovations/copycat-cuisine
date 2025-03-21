@@ -134,12 +134,19 @@ export const getRecipe = async (query: string): Promise<any> => {
 // Function to fetch a recipe from ChatGPT
 const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<any> => {
   try {
+    const cleanQuery = query.trim();
+    
+    // Enhanced prompt with clearer instructions for recipe finding
     const prompt = `
-      You are an expert chef specializing in recreating famous restaurant dishes. Please provide an authentic copycat recipe for "${query}".
+      As a culinary expert, your task is to provide a detailed copycat recipe for "${cleanQuery}".
       
-      I need you to carefully research this dish. Pay special attention to restaurant chains like "Steak and Ale" which was a popular steakhouse chain with dishes like the "Kensington Club" steak.
+      Research this recipe thoroughly. If this is a chain restaurant dish (like Olive Garden, Red Lobster, Cheesecake Factory, etc.) or a classic restaurant dish, please be extra diligent in providing the most authentic recipe.
       
-      The response should be in JSON format with the following structure:
+      For "Culvers" recipes, they're known for their ButterBurgers, Frozen Custard, Cheese Curds, and Onion Rings.
+      
+      For "Steak and Ale" recipes (a restaurant chain founded in 1966), be sure to include their famous dishes like the "Kensington Club" steak.
+      
+      The response must be in this exact JSON format:
       {
         "title": "Copycat [Restaurant/Store] [Recipe Name]",
         "originalSource": "[Restaurant/Store Name]",
@@ -151,18 +158,14 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
         "notes": "[any special notes or tips]"
       }
       
-      If you don't know a copycat recipe for this query, respond with a JSON object containing:
+      If you genuinely cannot find a specific copycat recipe after extensive research, respond with:
       {
         "notFound": true,
-        "query": "${query}",
-        "message": "[a whimsical and fun message about not finding the recipe]"
+        "query": "${cleanQuery}",
+        "message": "[a fun message about not finding the recipe]"
       }
       
-      Be whimsical, fun, and helpful in the response. Use a conversational tone if writing notes or a not found message.
-      Research widely, if it's a restaurant recipe that might be popular try your best to find it.
-      Be thorough and accurate in your research of famous copycat recipes.
-      
-      Remember: Steak and Ale was a restaurant chain founded in 1966 with popular dishes including the Kensington Club Steak - it's essential you check for this specifically if the query mentions it.
+      DO YOUR BEST to find the recipe - most popular restaurant items have copycat recipes available!
     `;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -172,19 +175,19 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o', // Using GPT-4o as it has the best knowledge
         messages: [
           {
             role: 'system',
-            content: 'You are a culinary historian and expert chef who specializes in recreating famous restaurant recipes with perfect accuracy. Your knowledge of restaurant chains is extensive and includes chains that no longer exist, like Steak and Ale.'
+            content: 'You are a culinary expert with extensive knowledge of restaurant copycat recipes. You have access to recipes from all major restaurant chains, including those that no longer exist like Steak and Ale. You meticulously recreate authentic versions of famous restaurant dishes. You NEVER say you cannot find a recipe unless you\'ve exhaustively searched and confirmed it doesn\'t exist. Your knowledge includes all popular chain restaurant dishes and their ingredients.'
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.3,
-        max_tokens: 3000
+        temperature: 0.2, // Lower temperature for more deterministic outputs
+        max_tokens: 4000 // Increased token limit for more detailed recipes
       })
     });
 

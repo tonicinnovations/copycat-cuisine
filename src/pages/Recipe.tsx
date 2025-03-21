@@ -1,13 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Search, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import NavBar from '@/components/NavBar';
 import RecipeCard from '@/components/RecipeCard';
 import { getRecipe } from '@/utils/api';
 import { getPremiumStatus } from '@/utils/storage';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 const Recipe = () => {
   const { query } = useParams<{ query: string }>();
@@ -19,35 +20,56 @@ const Recipe = () => {
   const [notFoundMessage, setNotFoundMessage] = useState('');
   const [isPremium, setIsPremium] = useState(false);
   
+  const fetchRecipe = async (recipeQuery: string) => {
+    if (!recipeQuery) return;
+    
+    setLoading(true);
+    setError(null);
+    setNotFound(false);
+    
+    try {
+      toast.info(`Searching for ${recipeQuery} recipe...`);
+      const result = await getRecipe(recipeQuery);
+      
+      if (result.notFound) {
+        setNotFound(true);
+        setNotFoundMessage(result.message);
+        toast.error("Recipe not found", { 
+          description: "Try searching for another recipe" 
+        });
+      } else {
+        setRecipe(result);
+        toast.success("Recipe found!", { 
+          description: `Found: ${result.title}` 
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching recipe:', err);
+      setError('Failed to fetch recipe. Please try again later.');
+      toast.error("Error finding recipe", { 
+        description: "Please try again" 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   useEffect(() => {
     const status = getPremiumStatus();
     setIsPremium(status.isPremium);
     
-    const fetchRecipe = async () => {
-      if (!query) return;
-      
-      setLoading(true);
-      try {
-        const result = await getRecipe(query);
-        
-        if (result.notFound) {
-          setNotFound(true);
-          setNotFoundMessage(result.message);
-        } else {
-          setRecipe(result);
-        }
-      } catch (err) {
-        console.error('Error fetching recipe:', err);
-        setError('Failed to fetch recipe. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchRecipe();
+    if (query) {
+      fetchRecipe(query);
+    }
   }, [query]);
   
   const goBack = () => navigate('/');
+  
+  const handleRetry = () => {
+    if (query) {
+      fetchRecipe(query);
+    }
+  };
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-culinary-cream to-white">
@@ -67,20 +89,43 @@ const Recipe = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center min-h-[300px]">
             <div className="relative w-16 h-16">
-              <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="absolute top-0 left-0 w-full h-full flex justify-center items-center"
+              >
                 <div className="relative w-12 h-12 animate-spin">
                   <div className="absolute top-0 left-0 w-full h-full border-4 border-culinary-beige rounded-full"></div>
                   <div className="absolute top-0 left-0 w-full h-full border-4 border-transparent border-t-culinary-copper rounded-full"></div>
                 </div>
-              </div>
+              </motion.div>
             </div>
-            <p className="mt-4 text-muted-foreground">Cooking up your recipe...</p>
+            <motion.p 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mt-4 text-muted-foreground"
+            >
+              Searching for {query ? `"${query}"` : "your recipe"}...
+            </motion.p>
           </div>
         ) : error ? (
-          <div className="text-center py-16">
-            <p className="text-lg text-red-500 mb-4">{error}</p>
-            <Button onClick={goBack}>Try Again</Button>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-16"
+          >
+            <div className="bg-white/90 backdrop-blur-sm border border-red-200 rounded-xl shadow-sm p-8 max-w-md mx-auto">
+              <p className="text-lg text-red-500 mb-4">{error}</p>
+              <div className="flex justify-center gap-4">
+                <Button onClick={handleRetry} variant="outline">
+                  <RefreshCw size={16} className="mr-2" />
+                  Try Again
+                </Button>
+                <Button onClick={goBack}>Go Back</Button>
+              </div>
+            </div>
+          </motion.div>
         ) : notFound ? (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
@@ -89,11 +134,17 @@ const Recipe = () => {
             className="text-center py-10 px-4 bg-white/90 backdrop-blur-sm border border-culinary-beige rounded-xl shadow-sm max-w-2xl mx-auto"
           >
             <div className="w-16 h-16 bg-culinary-cream rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">🔍</span>
+              <Search className="text-culinary-copper" size={24} />
             </div>
             <h2 className="text-2xl font-display font-medium mb-3">Recipe Not Found</h2>
             <p className="text-lg text-muted-foreground mb-6">{notFoundMessage}</p>
-            <Button onClick={goBack}>Try Another Recipe</Button>
+            <div className="flex flex-col sm:flex-row justify-center gap-3">
+              <Button onClick={handleRetry} variant="outline">
+                <RefreshCw size={16} className="mr-2" />
+                Try Again
+              </Button>
+              <Button onClick={goBack}>Try Another Recipe</Button>
+            </div>
           </motion.div>
         ) : (
           <motion.div 
