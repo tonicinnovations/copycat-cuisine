@@ -2,16 +2,12 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import NavBar from '@/components/NavBar';
 import { getPremiumStatus, clearPremiumStatus } from '@/utils/storage';
 import { toast } from 'sonner';
-import { getApiKey, setApiKey } from '@/utils/api';
 
 interface PremiumStatus {
   isPremium: boolean;
@@ -22,17 +18,10 @@ interface PremiumStatus {
 const Account = () => {
   const navigate = useNavigate();
   const [premiumStatus, setPremiumStatus] = useState<PremiumStatus>({ isPremium: false });
-  const [apiKey, setApiKeyState] = useState<string>('');
-  const [showApiKey, setShowApiKey] = useState(false);
   
   useEffect(() => {
     const status = getPremiumStatus();
     setPremiumStatus(status);
-    
-    const savedApiKey = getApiKey();
-    if (savedApiKey) {
-      setApiKeyState(savedApiKey);
-    }
   }, []);
   
   const handleLogout = () => {
@@ -50,15 +39,6 @@ const Account = () => {
       month: 'long',
       day: 'numeric'
     }).format(date);
-  };
-  
-  const handleApiKeySave = () => {
-    if (apiKey.trim()) {
-      setApiKey(apiKey.trim());
-      toast.success("API key saved successfully");
-    } else {
-      toast.error("Please enter a valid API key");
-    }
   };
   
   return (
@@ -125,45 +105,6 @@ const Account = () => {
                 onClick={handleLogout}
               >
                 Log Out
-              </Button>
-            </div>
-          </div>
-          
-          <div className="bg-white/90 backdrop-blur-md border border-culinary-beige rounded-xl p-6 shadow-sm">
-            <h2 className="text-xl font-display font-medium mb-4">OpenAI API Key</h2>
-            <p className="text-muted-foreground mb-6">
-              Enter your OpenAI API key to enable real recipe generation.
-            </p>
-            
-            <div className="space-y-4">
-              <div className="grid w-full items-center gap-1.5">
-                <Label htmlFor="apiKey">API Key</Label>
-                <div className="flex">
-                  <Input
-                    id="apiKey"
-                    type={showApiKey ? "text" : "password"}
-                    value={apiKey}
-                    onChange={(e) => setApiKeyState(e.target.value)}
-                    placeholder="sk-..."
-                    className="flex-1"
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setShowApiKey(!showApiKey)}
-                    className="ml-2"
-                    type="button"
-                  >
-                    {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </Button>
-                </div>
-              </div>
-              
-              <Button 
-                onClick={handleApiKeySave}
-                className="mt-2"
-              >
-                Save API Key
               </Button>
             </div>
           </div>

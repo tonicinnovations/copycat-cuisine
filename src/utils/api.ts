@@ -1,14 +1,8 @@
 import { toast } from "sonner";
 import { getPremiumStatus } from "./storage";
 
-// OpenAI API key - will be retrieved from localStorage
-const getApiKey = (): string | null => {
-  return localStorage.getItem('openai_api_key');
-};
-
-const setApiKey = (key: string): void => {
-  localStorage.setItem('openai_api_key', key);
-};
+// Hardcoded OpenAI API key
+const OPENAI_API_KEY = "your-api-key-goes-here"; // Replace this with your actual API key
 
 // Simulated sample responses for recipes
 const sampleResponses: Record<string, any> = {
@@ -134,43 +128,9 @@ const sampleResponses: Record<string, any> = {
 // Function to get recipes - uses real ChatGPT API, falls back to simulation
 export const getRecipe = async (query: string): Promise<any> => {
   const isPremium = getPremiumStatus().isPremium;
-  const apiKey = getApiKey();
   
-  // If API key is set, use the real ChatGPT API
-  if (apiKey) {
-    return fetchRecipeFromChatGPT(query, apiKey);
-  }
-  
-  // Otherwise, use the simulated responses
-  return new Promise((resolve, reject) => {
-    // Simulate API delay
-    setTimeout(() => {
-      // Check for exact match first
-      const exactMatch = sampleResponses[query.toLowerCase()];
-      
-      if (exactMatch) {
-        resolve(exactMatch);
-        return;
-      }
-      
-      // Look for partial matches
-      const queryWords = query.toLowerCase().split(' ');
-      
-      for (const [key, recipe] of Object.entries(sampleResponses)) {
-        if (queryWords.some(word => key.includes(word))) {
-          resolve(recipe);
-          return;
-        }
-      }
-      
-      // If no match found, generate a whimsical "not found" response
-      resolve({
-        notFound: true,
-        query,
-        message: generateWhimsicalNotFoundMessage(query)
-      });
-    }, 1500);
-  });
+  // Always use the real ChatGPT API with the hardcoded key
+  return fetchRecipeFromChatGPT(query, OPENAI_API_KEY);
 };
 
 // Function to fetch a recipe from ChatGPT
@@ -252,7 +212,7 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
     return {
       notFound: true,
       query,
-      message: `I tried to ask ChatGPT for this recipe, but encountered an error: ${error.message}. Please check the API key or try again later.`
+      message: `I encountered an error while trying to get this recipe: ${error.message}. Please try again later.`
     };
   }
 };
@@ -288,6 +248,3 @@ export const processPayment = async (plan: string, paymentDetails: any): Promise
     }, 2000);
   });
 };
-
-// Export the API key functions
-export { getApiKey, setApiKey };
