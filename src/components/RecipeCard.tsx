@@ -16,7 +16,6 @@ interface RecipeCardProps {
     cookTime: string;
     servings: number;
     notes?: string;
-    videoUrl?: string;
   };
   isPremium?: boolean;
 }
@@ -202,23 +201,6 @@ const RecipeCard = ({ recipe, isPremium = false }: RecipeCardProps) => {
             </div>
           </div>
         </div>
-        
-        {recipe.videoUrl && (
-          <PremiumFeature 
-            isPremium={isPremium} 
-            featureName="Video Tutorial"
-            className="mb-6"
-          >
-            <div className="relative aspect-video w-full bg-culinary-cream rounded-lg overflow-hidden">
-              <iframe 
-                src={isPremium ? recipe.videoUrl : ''}
-                title={`${recipe.title} Video Tutorial`}
-                className="absolute inset-0 w-full h-full"
-                allowFullScreen
-              />
-            </div>
-          </PremiumFeature>
-        )}
         
         <Separator className="my-6 bg-culinary-beige/50" />
         

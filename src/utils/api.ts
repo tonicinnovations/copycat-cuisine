@@ -37,8 +37,7 @@ const sampleResponses: Record<string, any> = {
     prepTime: "25 minutes",
     cookTime: "12 minutes",
     servings: 12,
-    notes: "For the authentic Olive Garden experience, serve these breadsticks with a side of marinara sauce. They're best enjoyed fresh, but can be stored in an airtight container for up to 2 days and reheated in the oven.",
-    videoUrl: "https://www.youtube.com/embed/Y9WXeB6cGrI"
+    notes: "For the authentic Olive Garden experience, serve these breadsticks with a side of marinara sauce. They're best enjoyed fresh, but can be stored in an airtight container for up to 2 days and reheated in the oven."
   },
   "starbucks pumpkin spice latte": {
     title: "Copycat Starbucks Pumpkin Spice Latte",
@@ -64,8 +63,7 @@ const sampleResponses: Record<string, any> = {
     prepTime: "5 minutes",
     cookTime: "10 minutes",
     servings: 2,
-    notes: "For a more authentic coffee shop experience, use freshly pulled espresso shots. You can adjust the sweetness to your preference and substitute alternative milks like almond or oat milk.",
-    videoUrl: "https://www.youtube.com/embed/wKHBJGwhYrU"
+    notes: "For a more authentic coffee shop experience, use freshly pulled espresso shots. You can adjust the sweetness to your preference and substitute alternative milks like almond or oat milk."
   },
   "chipotle guacamole": {
     title: "Copycat Chipotle Guacamole",
@@ -89,7 +87,7 @@ const sampleResponses: Record<string, any> = {
     prepTime: "10 minutes",
     cookTime: "0 minutes",
     servings: 4,
-    notes: "Chipotle's secret to perfect guacamole is using perfectly ripe avocados and the right balance of lime juice. Their restaurant recipe also calls for adding a pinch of fresh citrus zest for extra brightness.",
+    notes: "Chipotle's secret to perfect guacamole is using perfectly ripe avocados and the right balance of lime juice. Their restaurant recipe also calls for adding a pinch of fresh citrus zest for extra brightness."
   },
   "cheesecake factory cheesecake": {
     title: "Copycat Cheesecake Factory Original Cheesecake",
@@ -121,8 +119,7 @@ const sampleResponses: Record<string, any> = {
     prepTime: "30 minutes",
     cookTime: "1 hour 30 minutes",
     servings: 12,
-    notes: "For that signature Cheesecake Factory look, top with a thin layer of sweetened sour cream (mix 1 cup sour cream with 2 tablespoons sugar and 1 teaspoon vanilla). The secret to avoiding cracks is the water bath and allowing the cheesecake to cool slowly.",
-    videoUrl: "https://www.youtube.com/embed/uKR9yW6SDck"
+    notes: "For that signature Cheesecake Factory look, top with a thin layer of sweetened sour cream (mix 1 cup sour cream with 2 tablespoons sugar and 1 teaspoon vanilla). The secret to avoiding cracks is the water bath and allowing the cheesecake to cool slowly."
   }
 };
 
@@ -149,8 +146,7 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
         "prepTime": "[prep time in minutes]",
         "cookTime": "[cook time in minutes]",
         "servings": [number of servings],
-        "notes": "[any special notes or tips]",
-        "videoUrl": "[optional YouTube embed URL for a similar recipe]"
+        "notes": "[any special notes or tips]"
       }
       
       If you don't know a copycat recipe for this query, respond with a JSON object containing:
