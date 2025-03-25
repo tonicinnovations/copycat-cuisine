@@ -17,13 +17,21 @@ export default defineConfig(({ mode }) => ({
     componentTagger(),
     {
       name: 'copy-manifest',
+      buildEnd() {
+        // This will run at the end of the build process
+        console.log('Preparing to copy manifest.json...');
+      },
       closeBundle() {
-        // Ensure the manifest is copied to the dist folder
-        copyFileSync(
-          path.resolve(__dirname, 'public/manifest.json'),
-          path.resolve(__dirname, 'dist/manifest.json')
-        );
-        console.log('✅ manifest.json copied to dist folder');
+        try {
+          // Ensure the manifest is copied to the dist folder
+          copyFileSync(
+            path.resolve(__dirname, 'public/manifest.json'),
+            path.resolve(__dirname, 'dist/manifest.json')
+          );
+          console.log('✅ manifest.json copied to dist folder');
+        } catch (error) {
+          console.error('Failed to copy manifest.json:', error);
+        }
       }
     }
   ].filter(Boolean),
@@ -43,8 +51,8 @@ export default defineConfig(({ mode }) => ({
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          // Ensure background.js is directly in the dist folder
-          return chunkInfo.name === 'background' ? '[name].js' : 'assets/[name].[hash].js';
+          // Make sure background.js is output directly to the root of dist
+          return chunkInfo.name === 'background' ? 'background.js' : 'assets/[name].[hash].js';
         },
         chunkFileNames: `assets/[name].[hash].js`,
         assetFileNames: `assets/[name].[hash].[ext]`,
