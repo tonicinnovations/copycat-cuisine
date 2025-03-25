@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -43,7 +42,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     assetsInlineLimit: 0,
     outDir: "dist",
-    chunkSizeWarningLimit: 1000, // Increase the warning limit to 1000kb
+    chunkSizeWarningLimit: 1500, // Increased from 1000 to 1500kb
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, "index.html"),
@@ -56,14 +55,37 @@ export default defineConfig(({ mode }) => ({
         },
         chunkFileNames: `assets/[name].[hash].js`,
         assetFileNames: `assets/[name].[hash].[ext]`,
-        // Adding manual chunks to reduce bundle size
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom', 'framer-motion'],
-          ui: [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-separator'
-          ]
+        // Improved manual chunks configuration for better code splitting
+        manualChunks: (id) => {
+          // React and related packages in a single chunk
+          if (id.includes('node_modules/react') || 
+              id.includes('node_modules/react-dom') || 
+              id.includes('node_modules/react-router-dom') || 
+              id.includes('node_modules/framer-motion')) {
+            return 'vendor-react';
+          }
+          
+          // UI components from Radix
+          if (id.includes('node_modules/@radix-ui')) {
+            return 'vendor-radix';
+          }
+          
+          // Other UI-related packages
+          if (id.includes('node_modules/lucide-react') || 
+              id.includes('node_modules/tailwind-merge') || 
+              id.includes('node_modules/class-variance-authority')) {
+            return 'vendor-ui';
+          }
+          
+          // Data handling and forms
+          if (id.includes('node_modules/@tanstack') || 
+              id.includes('node_modules/react-hook-form') ||
+              id.includes('node_modules/zod')) {
+            return 'vendor-data';
+          }
+          
+          // Return undefined for everything else to let Rollup decide
+          return undefined;
         }
       }
     }
