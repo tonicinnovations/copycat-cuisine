@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     assetsInlineLimit: 0,
     outDir: "dist",
-    chunkSizeWarningLimit: 1500, // Increased from 1000 to 1500kb
+    chunkSizeWarningLimit: 1500,
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, "index.html"),
@@ -55,33 +55,70 @@ export default defineConfig(({ mode }) => ({
         },
         chunkFileNames: `assets/[name].[hash].js`,
         assetFileNames: `assets/[name].[hash].[ext]`,
-        // Improved manual chunks configuration for better code splitting
+        // Enhanced manual chunks for better code splitting
         manualChunks: (id) => {
-          // React and related packages in a single chunk
+          // React core in a separate chunk
           if (id.includes('node_modules/react') || 
-              id.includes('node_modules/react-dom') || 
-              id.includes('node_modules/react-router-dom') || 
-              id.includes('node_modules/framer-motion')) {
-            return 'vendor-react';
+              id.includes('node_modules/react-dom')) {
+            return 'vendor-react-core';
           }
           
-          // UI components from Radix
+          // React ecosystem packages
+          if (id.includes('node_modules/react-router') ||
+              id.includes('node_modules/react-hook-form')) {
+            return 'vendor-react-ecosystem';
+          }
+          
+          // Animation libraries
+          if (id.includes('node_modules/framer-motion')) {
+            return 'vendor-animation';
+          }
+          
+          // Radix UI components by feature
+          if (id.includes('node_modules/@radix-ui/react-dialog') ||
+              id.includes('node_modules/@radix-ui/react-popover') ||
+              id.includes('node_modules/@radix-ui/react-sheet')) {
+            return 'vendor-radix-overlays';
+          }
+          
+          if (id.includes('node_modules/@radix-ui/react-tabs') ||
+              id.includes('node_modules/@radix-ui/react-accordion') ||
+              id.includes('node_modules/@radix-ui/react-collapsible')) {
+            return 'vendor-radix-disclosure';
+          }
+          
+          if (id.includes('node_modules/@radix-ui/react-form') ||
+              id.includes('node_modules/@radix-ui/react-select') ||
+              id.includes('node_modules/@radix-ui/react-checkbox') ||
+              id.includes('node_modules/@radix-ui/react-radio')) {
+            return 'vendor-radix-forms';
+          }
+          
+          // Other Radix components
           if (id.includes('node_modules/@radix-ui')) {
-            return 'vendor-radix';
+            return 'vendor-radix-other';
           }
           
-          // Other UI-related packages
+          // UI utilities
           if (id.includes('node_modules/lucide-react') || 
               id.includes('node_modules/tailwind-merge') || 
               id.includes('node_modules/class-variance-authority')) {
-            return 'vendor-ui';
+            return 'vendor-ui-utils';
           }
           
-          // Data handling and forms
-          if (id.includes('node_modules/@tanstack') || 
-              id.includes('node_modules/react-hook-form') ||
-              id.includes('node_modules/zod')) {
-            return 'vendor-data';
+          // Data handling
+          if (id.includes('node_modules/@tanstack')) {
+            return 'vendor-tanstack';
+          }
+          
+          // Validation
+          if (id.includes('node_modules/zod')) {
+            return 'vendor-validation';
+          }
+          
+          // Date handling
+          if (id.includes('node_modules/date-fns')) {
+            return 'vendor-dates';
           }
           
           // Return undefined for everything else to let Rollup decide
