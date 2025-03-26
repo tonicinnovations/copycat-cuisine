@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -51,8 +50,7 @@ export default defineConfig(({ mode }) => ({
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          // Output background.js directly to the root of dist
-          // This ensures the file is at /dist/background.js and not /dist/assets/background.js
+          // Force background.js to be output at the root level
           return chunkInfo.name === 'background' ? '[name].js' : 'assets/[name].[hash].js';
         },
         chunkFileNames: `assets/[name].[hash].js`,
