@@ -25,6 +25,7 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [suggestion, setSuggestion] = useState('');
+  const [searchesLeft, setSearchesLeft] = useState(getFreeSearchLimit() - getSearchCount());
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const freeSearchLimit = getFreeSearchLimit();
@@ -40,6 +41,11 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
+  }, []);
+
+  // Update searches left when component mounts or when search count changes
+  useEffect(() => {
+    setSearchesLeft(getFreeSearchLimit() - getSearchCount());
   }, []);
 
   const handleSearch = async (e?: React.FormEvent) => {
@@ -105,9 +111,11 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
       
       setTimeout(() => {
         if (!isPremium) {
-          incrementSearchCount();
+          // We'll increment the search count here, but the actual count will be handled in Recipe.tsx
+          navigate(`/recipe/${encodeURIComponent(formattedQuery)}`);
+        } else {
+          navigate(`/recipe/${encodeURIComponent(formattedQuery)}`);
         }
-        navigate(`/recipe/${encodeURIComponent(formattedQuery)}`);
         setIsLoading(false);
       }, 1500);
     } catch (error) {
@@ -173,7 +181,7 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
         {!isPremium && (
           <span className="inline-flex items-center">
             <span className="relative px-2 py-1 bg-muted rounded-full text-xs font-medium">
-              {freeSearchLimit - getSearchCount()} of {freeSearchLimit} free searches left today
+              {searchesLeft} of {freeSearchLimit} free searches left today
             </span>
           </span>
         )}

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import NavBar from '@/components/NavBar';
 import RecipeCard from '@/components/RecipeCard';
 import { getRecipe } from '@/utils/api';
-import { getPremiumStatus } from '@/utils/storage';
+import { getPremiumStatus, incrementSearchCount } from '@/utils/storage';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -21,6 +21,7 @@ const Recipe = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [whimsicalIntro, setWhimsicalIntro] = useState('');
   const [endingQuestion, setEndingQuestion] = useState('');
+  const [searchCounted, setSearchCounted] = useState(false);
   
   const fetchRecipe = async (recipeQuery: string) => {
     if (!recipeQuery) return;
@@ -30,6 +31,7 @@ const Recipe = () => {
     setNotFound(false);
     setWhimsicalIntro('');
     setEndingQuestion('');
+    setSearchCounted(false);
     
     try {
       toast.info(`Searching for ${recipeQuery} recipe...`);
@@ -50,6 +52,12 @@ const Recipe = () => {
           description: "Try searching for another recipe" 
         });
       } else {
+        // Only increment search count when a recipe is successfully found
+        if (!isPremium && !searchCounted) {
+          incrementSearchCount();
+          setSearchCounted(true);
+        }
+        
         setRecipe(result);
         setWhimsicalIntro(result.whimsicalIntro || '');
         setEndingQuestion(result.endingQuestion || '');
