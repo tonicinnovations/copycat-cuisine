@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Search, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,13 +10,30 @@ interface SearchBarProps {
   isPremium?: boolean;
 }
 
+// Popular restaurant examples for suggestions
+const POPULAR_SEARCHES = [
+  "Olive Garden Breadsticks",
+  "Cheesecake Factory Avocado Egg Rolls",
+  "Texas Roadhouse Rolls",
+  "Red Lobster Cheddar Bay Biscuits",
+  "Chipotle Burrito Bowl",
+  "Panera Broccoli Cheddar Soup"
+];
+
 const SearchBar = ({ isPremium = false }: SearchBarProps) => {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [suggestion, setSuggestion] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const freeSearchLimit = getFreeSearchLimit();
+
+  // Get random suggestion
+  useEffect(() => {
+    const randomSuggestion = POPULAR_SEARCHES[Math.floor(Math.random() * POPULAR_SEARCHES.length)];
+    setSuggestion(randomSuggestion);
+  }, []);
 
   // Auto-focus effect
   useEffect(() => {
@@ -54,14 +72,33 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
     setIsLoading(true);
     
     try {
-      // Provide helpful suggestions for users looking for restaurant recipes
-      const lowerQuery = query.toLowerCase();
-      if (lowerQuery.includes("recipes from") || lowerQuery.includes("dishes from") || lowerQuery.includes("menu items from")) {
+      // Format query to improve search success
+      let formattedQuery = query.trim();
+      
+      // If it looks like they're searching for a restaurant's menu items
+      const lowerQuery = formattedQuery.toLowerCase();
+      if (lowerQuery.includes("recipes from") || lowerQuery.includes("dishes from") || lowerQuery.includes("menu items from") || lowerQuery.includes("menu from")) {
         // Extract restaurant name - not complex, but works for basic queries
-        const restaurant = lowerQuery.replace(/recipes from|dishes from|menu items from/gi, "").trim();
+        const restaurant = lowerQuery.replace(/recipes from|dishes from|menu items from|menu from/gi, "").trim();
         if (restaurant) {
           toast.info(`Looking for ${restaurant} recipes...`, {
             description: "You can also search for specific dishes!"
+          });
+        }
+      } 
+      // If they're just searching for a recipe without specifying where it's from
+      else if (!lowerQuery.includes(" from ")) {
+        // Check if it might be a restaurant dish but missing the restaurant name
+        const commonRestaurantDishes = [
+          "bloomin onion", "egg rolls", "biscuits", "breadsticks", "fettuccine", 
+          "burrito bowl", "chicken sandwich", "burger", "pasta"
+        ];
+        
+        const mightBeRestaurantDish = commonRestaurantDishes.some(dish => lowerQuery.includes(dish));
+        
+        if (mightBeRestaurantDish) {
+          toast.info("Searching for your recipe...", {
+            description: "For better results, try adding the restaurant name (e.g., 'from Olive Garden')"
           });
         }
       }
@@ -70,7 +107,7 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
         if (!isPremium) {
           incrementSearchCount();
         }
-        navigate(`/recipe/${encodeURIComponent(query)}`);
+        navigate(`/recipe/${encodeURIComponent(formattedQuery)}`);
         setIsLoading(false);
       }, 1500);
     } catch (error) {
@@ -143,7 +180,7 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
       </div>
       
       <div className="text-center mt-4 text-sm text-muted-foreground">
-        <p>Try: "Olive Garden Breadsticks" or "recipes from Chipotle"</p>
+        <p>Try: "{suggestion}" or "recipes from Chipotle"</p>
       </div>
     </form>
   );
