@@ -94,6 +94,20 @@ const Index = () => {
             transition={{ delay: 0.6, duration: 0.6 }}
             className="w-full max-w-3xl mx-auto"
           >
+            {/* Search instructions */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
+              className="mb-4 bg-white/50 backdrop-blur-sm rounded-lg p-3 border border-culinary-beige"
+            >
+              <p className="text-sm text-muted-foreground">
+                <strong>Search Tip:</strong> For best results type in the menu item followed by the restaurant or brand name. 
+                If no results are found, try the opposite way, Restaurant or brand name followed by menu item. 
+                If still no results, try your search again. Sometimes I need just a little more time.
+              </p>
+            </motion.div>
+            
             <SearchBar isPremium={isPremium} />
           </motion.div>
           
