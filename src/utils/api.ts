@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { getPremiumStatus } from "./storage";
 
@@ -189,7 +190,7 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o', // Using GPT-4o as it has the best knowledge
+        model: 'gpt-4', // Using GPT-4 as specifically requested
         messages: [
           {
             role: 'system',
