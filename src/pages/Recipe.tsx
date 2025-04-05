@@ -19,6 +19,8 @@ const Recipe = () => {
   const [notFound, setNotFound] = useState(false);
   const [notFoundMessage, setNotFoundMessage] = useState('');
   const [isPremium, setIsPremium] = useState(false);
+  const [whimsicalIntro, setWhimsicalIntro] = useState('');
+  const [endingQuestion, setEndingQuestion] = useState('');
   
   const fetchRecipe = async (recipeQuery: string) => {
     if (!recipeQuery) return;
@@ -26,19 +28,31 @@ const Recipe = () => {
     setLoading(true);
     setError(null);
     setNotFound(false);
+    setWhimsicalIntro('');
+    setEndingQuestion('');
     
     try {
       toast.info(`Searching for ${recipeQuery} recipe...`);
       const result = await getRecipe(recipeQuery);
       
-      if (result.notFound) {
+      if (result.notRecipe) {
         setNotFound(true);
         setNotFoundMessage(result.message);
+        setEndingQuestion(result.endingQuestion);
+        toast.error("That's not a recipe question", { 
+          description: "Please ask for a copycat recipe instead" 
+        });
+      } else if (result.notFound) {
+        setNotFound(true);
+        setNotFoundMessage(result.message);
+        setEndingQuestion(result.endingQuestion);
         toast.error("Recipe not found", { 
           description: "Try searching for another recipe" 
         });
       } else {
         setRecipe(result);
+        setWhimsicalIntro(result.whimsicalIntro || '');
+        setEndingQuestion(result.endingQuestion || '');
         toast.success("Recipe found!", { 
           description: `Found: ${result.title}` 
         });
@@ -137,7 +151,8 @@ const Recipe = () => {
               <Search className="text-culinary-copper" size={24} />
             </div>
             <h2 className="text-2xl font-display font-medium mb-3">Recipe Not Found</h2>
-            <p className="text-lg text-muted-foreground mb-6">{notFoundMessage}</p>
+            <p className="text-lg text-muted-foreground mb-4">{notFoundMessage}</p>
+            <p className="text-md text-culinary-copper mb-6">{endingQuestion}</p>
             <div className="flex flex-col sm:flex-row justify-center gap-3">
               <Button onClick={handleRetry} variant="outline">
                 <RefreshCw size={16} className="mr-2" />
@@ -152,7 +167,35 @@ const Recipe = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
+            {whimsicalIntro && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-culinary-cream/60 border border-culinary-beige rounded-xl p-6 mb-8 text-center shadow-sm"
+              >
+                <p className="text-lg font-medium text-culinary-copper italic">{whimsicalIntro}</p>
+              </motion.div>
+            )}
+            
             <RecipeCard recipe={recipe} isPremium={isPremium} />
+            
+            {endingQuestion && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="mt-8 text-center"
+              >
+                <p className="text-lg text-culinary-copper font-medium">{endingQuestion}</p>
+                <Button 
+                  onClick={goBack}
+                  className="mt-4"
+                  variant="outline"
+                >
+                  Find Another Recipe
+                </Button>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </main>

@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { getPremiumStatus } from "./storage";
 
@@ -131,22 +130,25 @@ export const getRecipe = async (query: string): Promise<any> => {
   return fetchRecipeFromChatGPT(query, OPENAI_API_KEY);
 };
 
-// Function to fetch a recipe from ChatGPT
+// Function to fetch a recipe from ChatGPT with whimsical responses
 const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<any> => {
   try {
     const cleanQuery = query.trim();
     
-    // Enhanced prompt with clearer instructions for recipe finding
+    // Enhanced prompt with whimsical, fun response style
     const prompt = `
-      As a culinary expert, your task is to provide a detailed copycat recipe for "${cleanQuery}".
+      As a fun, whimsical culinary expert, your task is to provide a copycat recipe for "${cleanQuery}" with personality and flair.
       
       Research this recipe thoroughly. If this is a chain restaurant dish (like Olive Garden, Red Lobster, Cheesecake Factory, etc.) or a classic restaurant dish, please be extra diligent in providing the most authentic recipe.
       
-      For "Culvers" recipes, they're known for their ButterBurgers, Frozen Custard, Cheese Curds, and Onion Rings.
+      Your response MUST have two parts:
       
-      For "Steak and Ale" recipes (a restaurant chain founded in 1966), be sure to include their famous dishes like the "Kensington Club" steak.
+      PART 1: A whimsical, entertaining introduction that shows excitement about sharing this recipe. Be fun without being corny. Examples:
+      - "Do I?! I have the wicked good recipe that compliments any Chowda heads appetite!"
+      - "Holy guacamole! You've just unlocked the secret recipe vault! This Chipotle copycat will have your taste buds doing the salsa dance!"
+      - "Butter my biscuit! The Colonel's secret is out, and I've got the 11 herbs and spices right here!"
       
-      The response must be in this exact JSON format:
+      PART 2: The recipe in this exact JSON format:
       {
         "title": "Copycat [Restaurant/Store] [Recipe Name]",
         "originalSource": "[Restaurant/Store Name]",
@@ -155,17 +157,29 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
         "prepTime": "[prep time in minutes]",
         "cookTime": "[cook time in minutes]",
         "servings": [number of servings],
-        "notes": "[any special notes or tips]"
+        "notes": "[any special notes or tips]",
+        "whimsicalIntro": "[your fun introduction from Part 1]",
+        "endingQuestion": "Would you like to find more copycat recipes? I've got a chef's hat full of them!"
       }
       
-      If you genuinely cannot find a specific copycat recipe after extensive research, respond with:
+      If you genuinely cannot find a specific copycat recipe after extensive research, respond with a fun message like:
       {
         "notFound": true,
         "query": "${cleanQuery}",
-        "message": "[a fun message about not finding the recipe]"
+        "message": "[a fun, whimsical message about not finding the recipe]",
+        "endingQuestion": "Would you like to try another recipe? My cookbook is overflowing with other tasty secrets!"
       }
       
       DO YOUR BEST to find the recipe - most popular restaurant items have copycat recipes available!
+      
+      If the user asks for available recipes from a specific restaurant, list 4-6 popular items from that restaurant that you can provide recipes for.
+      
+      If the user asks a non-recipe question, respond with:
+      {
+        "notRecipe": true,
+        "message": "I'm sorry, that is out of the scope of my expertise. But if you want a copycat recipe, I am your man! Umm your chef! Well... I can get it for you!",
+        "endingQuestion": "Would you like to find a copycat recipe instead?"
+      }
     `;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -179,15 +193,15 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
         messages: [
           {
             role: 'system',
-            content: 'You are a culinary expert with extensive knowledge of restaurant copycat recipes. You have access to recipes from all major restaurant chains, including those that no longer exist like Steak and Ale. You meticulously recreate authentic versions of famous restaurant dishes. You NEVER say you cannot find a recipe unless you\'ve exhaustively searched and confirmed it doesn\'t exist. Your knowledge includes all popular chain restaurant dishes and their ingredients.'
+            content: 'You are a fun, entertaining culinary expert with extensive knowledge of restaurant copycat recipes. You have access to recipes from all major restaurant chains. You provide authentic versions of famous restaurant dishes with a whimsical, fun tone. You NEVER say you cannot find a recipe unless you\'ve exhaustively searched and confirmed it doesn\'t exist. You ALWAYS end your responses by asking if the user would like to find more recipes.'
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.2, // Lower temperature for more deterministic outputs
-        max_tokens: 4000 // Increased token limit for more detailed recipes
+        temperature: 0.7, // Higher temperature for more creative responses
+        max_tokens: 4000
       })
     });
 
@@ -209,6 +223,17 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
       const jsonStr = jsonMatch[1] || content;
       const recipeData = JSON.parse(jsonStr);
       
+      // Format the recipe with whimsical elements if it's a found recipe
+      if (!recipeData.notFound && !recipeData.notRecipe) {
+        // Make sure we have the whimsical intro and ending question
+        if (!recipeData.whimsicalIntro) {
+          recipeData.whimsicalIntro = generateWhimsicalIntro(recipeData.title);
+        }
+        if (!recipeData.endingQuestion) {
+          recipeData.endingQuestion = "Would you like to find more copycat recipes? I've got a chef's hat full of them!";
+        }
+      }
+      
       return recipeData;
     } catch (parseError) {
       console.error('Error parsing ChatGPT response:', parseError);
@@ -218,13 +243,27 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
   } catch (error) {
     console.error('Error fetching recipe from ChatGPT:', error);
     
-    // Fallback to simulated not found
+    // Fallback to whimsical not found message
     return {
       notFound: true,
       query,
-      message: `I encountered an error while trying to get this recipe: ${error.message}. Please try again later.`
+      message: generateWhimsicalNotFoundMessage(query),
+      endingQuestion: "Would you like to try another recipe? My cookbook is overflowing with other tasty secrets!"
     };
   }
+};
+
+// Generate a fun, whimsical introduction for a recipe
+const generateWhimsicalIntro = (recipeTitle: string): string => {
+  const intros = [
+    `Holy rolling pins! You've just unlocked the secret to ${recipeTitle}! This recipe is so good, it should be illegal!`,
+    `Butter my biscuit! I've got the inside scoop on ${recipeTitle} that'll make your taste buds do a happy dance!`,
+    `Great googly moogly! The ${recipeTitle} recipe has been liberated from its vault! Time to cook like a kitchen wizard!`,
+    `Sweet sizzling spatulas! This ${recipeTitle} copycat is the real deal - your dinner guests will be asking for your secret!`,
+    `Jumpin' jalapeños! I'm thrilled to share this ${recipeTitle} recipe that's hotter than my oven on broil!`
+  ];
+  
+  return intros[Math.floor(Math.random() * intros.length)];
 };
 
 // Generate a fun, whimsical message when a recipe is not found

@@ -55,8 +55,18 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
     setIsLoading(true);
     
     try {
-      // In a real implementation, this would be an API call to ChatGPT
-      // For now, we'll simulate a delay and then navigate to a recipe page
+      // Provide helpful suggestions for users looking for restaurant recipes
+      const lowerQuery = query.toLowerCase();
+      if (lowerQuery.includes("recipes from") || lowerQuery.includes("dishes from") || lowerQuery.includes("menu items from")) {
+        // Extract restaurant name - not complex, but works for basic queries
+        const restaurant = lowerQuery.replace(/recipes from|dishes from|menu items from/gi, "").trim();
+        if (restaurant) {
+          toast.info(`Looking for ${restaurant} recipes...`, {
+            description: "You can also search for specific dishes!"
+          });
+        }
+      }
+      
       setTimeout(() => {
         if (!isPremium) {
           incrementSearchCount();
@@ -66,7 +76,7 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
       }, 1500);
     } catch (error) {
       console.error('Search error:', error);
-      toast.error("Couldn't find that recipe", {
+      toast.error("Couldn't process that search", {
         description: "Please try a different search term"
       });
       setIsLoading(false);
@@ -131,6 +141,10 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
             </span>
           </span>
         )}
+      </div>
+      
+      <div className="text-center mt-4 text-sm text-muted-foreground">
+        <p>Try: "Olive Garden Breadsticks" or "recipes from Chipotle"</p>
       </div>
     </form>
   );
