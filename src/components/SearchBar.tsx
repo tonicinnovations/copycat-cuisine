@@ -181,7 +181,7 @@ const SearchBar = ({ isPremium = false }: SearchBarProps) => {
         {!isPremium && (
           <span className="inline-flex items-center">
             <span className="relative px-2 py-1 bg-muted rounded-full text-xs font-medium">
-              {searchesLeft} of {freeSearchLimit} free searches left today
+              {searchesLeft} of 3 searches left today
             </span>
           </span>
         )}
