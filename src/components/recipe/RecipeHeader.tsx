@@ -59,7 +59,7 @@ const RecipeHeader = ({
         <p className="text-muted-foreground">
           Inspired by {originalSource}
         </p>
-        {sourcesUsed && (
+        {sourcesUsed && sourcesUsed.trim() !== "" && (
           <p className="text-sm text-culinary-copper mt-1">
             {sourcesUsed}
           </p>

@@ -1,4 +1,3 @@
-
 import { generateWhimsicalIntro, generateWhimsicalNotFoundMessage } from "./whimsicalMessages";
 
 // Function to fetch a recipe from ChatGPT with whimsical responses
@@ -35,7 +34,8 @@ export const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Pro
         "servings": [number of servings],
         "notes": "[any special notes or tips]",
         "whimsicalIntro": "[your fun introduction from Part 1]",
-        "endingQuestion": "Would you like to find more copycat recipes? I've got a chef's hat full of them!"
+        "endingQuestion": "Would you like to find more copycat recipes? I've got a chef's hat full of them!",
+        "sourcesUsed": "[IMPORTANT: ONLY include topsecretrecipes.com here if you actually found and used information from this site for this specific recipe. Otherwise, leave this field empty.]"
       }
       
       If you genuinely cannot find a specific copycat recipe after extensive research, respond with a fun message like:
@@ -109,8 +109,13 @@ export const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Pro
           recipeData.endingQuestion = "Would you like to find more copycat recipes? I've got a chef's hat full of them!";
         }
         
-        // Only add the topsecretrecipes.com attribution if a recipe was successfully found
-        recipeData.sourcesUsed = "Our search includes recipe sources like topsecretrecipes.com to find the best copycat versions!";
+        // Only add the topsecretrecipes.com attribution if it was explicitly mentioned as a source
+        if (recipeData.sourcesUsed && recipeData.sourcesUsed.toLowerCase().includes('topsecretrecipes.com')) {
+          recipeData.sourcesUsed = "Our search includes recipe sources like topsecretrecipes.com to find the best copycat versions!";
+        } else {
+          // Otherwise, don't mention topsecretrecipes.com
+          recipeData.sourcesUsed = "";
+        }
       }
       
       console.log("Recipe data found:", recipeData.title || "Not found");
