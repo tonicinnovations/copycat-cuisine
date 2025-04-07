@@ -22,6 +22,7 @@ const Recipe = () => {
   const [whimsicalIntro, setWhimsicalIntro] = useState('');
   const [endingQuestion, setEndingQuestion] = useState('');
   const [searchCounted, setSearchCounted] = useState(false);
+  const [sourcesUsed, setSourcesUsed] = useState('');
   
   const fetchRecipe = async (recipeQuery: string) => {
     if (!recipeQuery) return;
@@ -32,6 +33,7 @@ const Recipe = () => {
     setWhimsicalIntro('');
     setEndingQuestion('');
     setSearchCounted(false);
+    setSourcesUsed('');
     
     try {
       toast.info(`Searching for ${recipeQuery} recipe...`);
@@ -61,6 +63,9 @@ const Recipe = () => {
         setRecipe(result);
         setWhimsicalIntro(result.whimsicalIntro || '');
         setEndingQuestion(result.endingQuestion || '');
+        if (result.sourcesUsed) {
+          setSourcesUsed(result.sourcesUsed);
+        }
         toast.success("Recipe found!", { 
           description: `Found: ${result.title}` 
         });
@@ -185,7 +190,7 @@ const Recipe = () => {
               </motion.div>
             )}
             
-            <RecipeCard recipe={recipe} isPremium={isPremium} />
+            <RecipeCard recipe={{...recipe, sourcesUsed: sourcesUsed}} isPremium={isPremium} />
             
             {endingQuestion && (
               <motion.div 

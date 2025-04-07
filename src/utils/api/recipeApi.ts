@@ -72,7 +72,7 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
     const cleanQuery = query.trim();
     
     // Enhanced prompt with whimsical, fun response style and more explicit instructions
-    // to always return a recipe if possible, now including topsecretrecipes.com as a resource
+    // to always return a recipe if possible, now mentioning topsecretrecipes.com only if recipe is found
     const prompt = `
       As a fun, whimsical culinary expert, your task is to provide a copycat recipe for "${cleanQuery}" with personality and flair.
       
@@ -173,6 +173,9 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
         if (!recipeData.endingQuestion) {
           recipeData.endingQuestion = "Would you like to find more copycat recipes? I've got a chef's hat full of them!";
         }
+        
+        // Only add the topsecretrecipes.com attribution if a recipe was successfully found
+        recipeData.sourcesUsed = "Our search includes recipe sources like topsecretrecipes.com to find the best copycat versions!";
       }
       
       console.log("Recipe data found:", recipeData.title || "Not found");

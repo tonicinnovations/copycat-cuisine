@@ -1,3 +1,4 @@
+
 import { Heart, Printer, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PremiumFeature from '@/components/PremiumFeature';
@@ -12,6 +13,7 @@ interface RecipeHeaderProps {
   onSave: () => void;
   onPrint: () => void;
   onShare: () => void;
+  sourcesUsed?: string;
 }
 
 const RecipeHeader = ({
@@ -21,7 +23,8 @@ const RecipeHeader = ({
   isPremium,
   onSave,
   onPrint,
-  onShare
+  onShare,
+  sourcesUsed
 }: RecipeHeaderProps) => {
   const handleShare = () => {
     try {
@@ -56,6 +59,11 @@ const RecipeHeader = ({
         <p className="text-muted-foreground">
           Inspired by {originalSource}
         </p>
+        {sourcesUsed && (
+          <p className="text-sm text-culinary-copper mt-1">
+            {sourcesUsed}
+          </p>
+        )}
       </div>
       
       <div className="flex flex-wrap gap-2 print:hidden">
