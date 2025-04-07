@@ -16,8 +16,41 @@
     "service_worker": "background.js",
     "type": "module"
   },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.mcdonalds.com/*",
+        "*://*.olivegarden.com/*",
+        "*://*.chickfila.com/*",
+        "*://*.chick-fil-a.com/*",
+        "*://*.panerabread.com/*",
+        "*://*.starbucks.com/*",
+        "*://*.thecheesecakefactory.com/*",
+        "*://*.chillis.com/*",
+        "*://*.tacobell.com/*",
+        "*://*.kfc.com/*",
+        "*://*.dominos.com/*",
+        "*://*.pizzahut.com/*",
+        "*://*.subway.com/*",
+        "*://*.wendys.com/*",
+        "*://*.outback.com/*",
+        "*://*.burgerking.com/*",
+        "*://*.texasroadhouse.com/*",
+        "*://*.redlobster.com/*",
+        "*://*.chipotle.com/*",
+        "*://*.buffalowildwings.com/*",
+        "*://*.ihop.com/*",
+        "*://*.dennys.com/*",
+        "*://*.applebees.com/*",
+        "*://*.cracker-barrel.com/*",
+        "*://*.popeyes.com/*"
+      ],
+      "js": ["assets/content_script.js"]
+    }
+  ],
   "permissions": [
-    "storage"
+    "storage",
+    "activeTab"
   ],
   "host_permissions": [
     "https://*/*"

@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -47,11 +48,15 @@ export default defineConfig(({ mode }) => ({
       input: {
         main: path.resolve(__dirname, "index.html"),
         background: path.resolve(__dirname, "src/background.ts"),
+        content_script: path.resolve(__dirname, "src/content_script.ts")
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          // Force background.js to be output at the root level
-          return chunkInfo.name === 'background' ? '[name].js' : 'assets/[name].[hash].js';
+          // Force background.js and content_script.js to be output at the root level
+          if (chunkInfo.name === 'background' || chunkInfo.name === 'content_script') {
+            return 'assets/[name].js';
+          }
+          return 'assets/[name].[hash].js';
         },
         chunkFileNames: `assets/[name].[hash].js`,
         assetFileNames: `assets/[name].[hash].[ext]`,

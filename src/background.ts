@@ -18,6 +18,24 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+// Handle messages from content script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'findRecipe') {
+    const { dish, restaurant } = message;
+    const query = `${dish} from ${restaurant}`;
+    
+    // Open extension popup with the pre-filled query
+    chrome.tabs.create({
+      url: chrome.runtime.getURL(`index.html#/recipe/${encodeURIComponent(query)}`)
+    });
+    
+    console.log(`Searching for copycat recipe: ${query}`);
+    sendResponse({ success: true });
+  }
+  
+  return true; // Required for async response
+});
+
 // Keep extension active
 chrome.runtime.onSuspend.addListener(() => {
   console.log('CopyCat Cuisine extension suspended');
