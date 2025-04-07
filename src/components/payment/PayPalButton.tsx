@@ -36,16 +36,27 @@ const PayPalButton = ({
   onComplete
 }: PayPalButtonProps) => {
   const [paypalLoaded, setPaypalLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   
   // Load PayPal SDK
   useEffect(() => {
     if (!paypalLoaded && !window.paypal) {
+      console.log("Loading PayPal SDK...");
       const script = document.createElement('script');
       // Use production PayPal SDK with your client ID and include vault=true for subscriptions
       script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=subscription&vault=true`;
+      
       script.addEventListener('load', () => {
+        console.log("PayPal SDK loaded successfully");
         setPaypalLoaded(true);
       });
+      
+      script.addEventListener('error', (e) => {
+        console.error("Error loading PayPal SDK:", e);
+        setLoadError("Failed to load PayPal. Please try again or use a different payment method.");
+        toast.error("Failed to load PayPal");
+      });
+      
       document.body.appendChild(script);
       
       return () => {
@@ -59,13 +70,22 @@ const PayPalButton = ({
   // Initialize PayPal buttons when the SDK is loaded
   useEffect(() => {
     if (paypalLoaded && window.paypal && plan) {
+      console.log("Initializing PayPal buttons...");
       const paypalButtonsContainer = document.getElementById('paypal-button-container');
-      if (paypalButtonsContainer) {
-        paypalButtonsContainer.innerHTML = '';
-        
-        window.paypal.Buttons({
+      
+      if (!paypalButtonsContainer) {
+        console.error("PayPal button container not found");
+        return;
+      }
+      
+      // Clear the container first
+      paypalButtonsContainer.innerHTML = '';
+      
+      try {
+        const buttons = window.paypal.Buttons({
           // Create subscription instead of one-time order
           createSubscription: (data: any, actions: any) => {
+            console.log("Creating PayPal subscription/order for plan:", plan);
             // Get the numerical price without the $ sign
             const priceValue = plan.price.replace('$', '');
             
@@ -95,6 +115,7 @@ const PayPalButton = ({
           },
           // Handle successful payment
           onApprove: (data: any, actions: any) => {
+            console.log("PayPal payment approved:", data);
             onProcessingChange(true);
             
             // Store subscription/order ID for later management
@@ -133,10 +154,24 @@ const PayPalButton = ({
           },
           // Handle cancellation
           onCancel: () => {
+            console.log("PayPal payment cancelled");
             toast.info('Payment was cancelled');
             onProcessingChange(false);
           }
-        }).render('#paypal-button-container');
+        });
+        
+        if (!buttons) {
+          console.error("Failed to create PayPal buttons");
+          setLoadError("Failed to initialize PayPal. Please try again later.");
+          return;
+        }
+        
+        buttons.render('#paypal-button-container');
+        console.log("PayPal buttons rendered");
+      } catch (error) {
+        console.error("Error rendering PayPal buttons:", error);
+        setLoadError("Error initializing PayPal. Please try again later.");
+        toast.error("Failed to initialize PayPal");
       }
     }
   }, [paypalLoaded, plan, onSuccess, onProcessingChange, onComplete, onError]);
@@ -156,7 +191,20 @@ const PayPalButton = ({
   
   return (
     <div>
-      {paypalLoaded ? (
+      {loadError ? (
+        <div className="text-center py-6 text-red-500">
+          <p>{loadError}</p>
+          <button 
+            onClick={() => {
+              setLoadError(null);
+              setPaypalLoaded(false);
+            }}
+            className="mt-2 px-4 py-2 bg-culinary-copper text-white rounded"
+          >
+            Retry
+          </button>
+        </div>
+      ) : paypalLoaded ? (
         <div id="paypal-button-container" className="w-full min-h-[150px]"></div>
       ) : (
         <div className="flex justify-center py-6">
