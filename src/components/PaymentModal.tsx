@@ -4,9 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { CreditCard } from 'lucide-react';
 
-// Import refactored components
+// Import payment components
 import CreditCardForm from './payment/CreditCardForm';
-import PayPalButton from './payment/PayPalButton';
+import StripeButton from './payment/StripeButton';
 import PaymentSuccess from './payment/PaymentSuccess';
 import PriceSummary from './payment/PriceSummary';
 
@@ -22,7 +22,7 @@ interface PaymentModalProps {
 }
 
 const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => {
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'stripe'>('card');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   
@@ -75,7 +75,7 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
             <Tabs 
               defaultValue="card" 
               className="px-6"
-              onValueChange={(value) => setPaymentMethod(value as 'card' | 'paypal')}
+              onValueChange={(value) => setPaymentMethod(value as 'card' | 'stripe')}
               value={paymentMethod}
             >
               <TabsList className="grid grid-cols-2 mb-4">
@@ -83,12 +83,12 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
                   <CreditCard size={16} />
                   <span>Card</span>
                 </TabsTrigger>
-                <TabsTrigger value="paypal" className="flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19.554 9.488c.121.563.106 1.246-.04 2.051-.582 2.978-2.477 4.466-5.683 4.466h-.442a.666.666 0 0 0-.641.547l-.743 3.642a.54.54 0 0 1-.524.422H7.904a.444.444 0 0 1-.431-.543l.099-.384.789-3.878.449-2.432.475-2.422a.475.475 0 0 1 .462-.371h2.073c.981 0 1.747.143 2.298.428.551.286.91.7 1.077 1.244.088.322.133.572.11.812a.858.858 0 0 1 0 .262l.021.128c.092.594.141.974.2 1.154a1.714 1.714 0 0 0 .437.727z" />
-                    <path d="M7.904 18.626h3.566a.67.67 0 0 0 .642-.546l.741-3.647a.54.54 0 0 1 .524-.423h1.441c3.206 0 5.106-1.489 5.683-4.466.146-.805.161-1.488.04-2.051-.121-.574-.38-1.047-.769-1.418-.774-.78-2.143-1.177-4.108-1.177h-6.421c-.36 0-.668.259-.724.613l-2.58 12.715c-.43.255.131.508.387.508h1.578" fill="none" />
+                <TabsTrigger value="stripe" className="flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 21 21" fill="currentColor">
+                    <path d="M19.4 4.8c0-1.2-0.9-2.1-2.1-2.1H3.7c-1.2 0-2.1 0.9-2.1 2.1v11.4c0 1.2 0.9 2.1 2.1 2.1h13.6c1.2 0 2.1-0.9 2.1-2.1V4.8zM3.7 3.6h13.6c0.7 0 1.2 0.5 1.2 1.2v2H2.5v-2c0-0.7 0.5-1.2 1.2-1.2zm13.6 13.8H3.7c-0.7 0-1.2-0.5-1.2-1.2V7.7h15.9v8.5c0 0.7-0.5 1.2-1.1 1.2z" />
+                    <path d="M6.5 11.3h-2c-0.3 0-0.5-0.2-0.5-0.5s0.2-0.5 0.5-0.5h2c0.3 0 0.5 0.2 0.5 0.5s-0.2 0.5-0.5 0.5z" />
                   </svg>
-                  <span>PayPal</span>
+                  <span>Stripe</span>
                 </TabsTrigger>
               </TabsList>
               
@@ -100,10 +100,10 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
                 />
               </TabsContent>
               
-              <TabsContent value="paypal" className="flex flex-col items-center justify-center py-4">
+              <TabsContent value="stripe" className="flex flex-col items-center justify-center py-4">
                 <PriceSummary price={plan.price} />
                 
-                <PayPalButton 
+                <StripeButton 
                   plan={plan}
                   onProcessingChange={setIsProcessing}
                   onComplete={() => setIsComplete(true)}
