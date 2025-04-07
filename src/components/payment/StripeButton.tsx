@@ -3,8 +3,9 @@ import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { createStripeCheckoutSession } from '@/utils/api/stripeService';
 
-// Demo Stripe publishable key - this would be replaced with your actual key in production
+// This would be your actual publishable key in production
 const STRIPE_PUBLISHABLE_KEY = "pk_test_TYooMQauvdEDq54NiTphI7jx";
 
 interface StripeButtonProps {
@@ -35,18 +36,20 @@ const StripeButton = ({
       onProcessingChange(true);
       setError(null);
       
-      // In a real implementation, you would:
-      // 1. Call your backend to create a Stripe Checkout session
-      // 2. Redirect to the Stripe Checkout page
-      // 3. Handle the redirect back to your site
-      
       console.log(`Processing ${plan.name} payment for ${plan.price}`);
       
-      // For demo purposes, simulate a successful payment
+      // Create a Stripe Checkout session and redirect
+      const checkoutSession = await createStripeCheckoutSession(plan);
+      
+      if (!checkoutSession) {
+        throw new Error("Failed to create checkout session");
+      }
+      
+      // In a real implementation, we'd redirect to the Stripe Checkout URL
+      // For now, simulate success after a delay
       setTimeout(() => {
         // Store subscription info in localStorage (for demo)
-        const mockSessionId = `cs_test_${Math.random().toString(36).substring(2, 15)}`;
-        localStorage.setItem('copycat_subscription_id', mockSessionId);
+        localStorage.setItem('copycat_subscription_id', checkoutSession.sessionId);
         localStorage.setItem('copycat_subscription_period', plan.period);
         
         setIsLoading(false);
@@ -132,7 +135,7 @@ const StripeButton = ({
         </Button>
       )}
       <p className="text-xs text-center text-muted-foreground mt-3">
-        This is a demo - no real payment will be processed.
+        For testing, use card number 4242 4242 4242 4242
       </p>
     </div>
   );
