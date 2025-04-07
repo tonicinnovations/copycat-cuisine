@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Your PayPal client ID - Production client ID
-const PAYPAL_CLIENT_ID = "AWlG0jsULIbL7Un-uRUaB88Q_zn8Vu09fpwqI-sm9p9iV0IdgiASJwFUQvX3slmCYAuXRn9UrudgwVx5";
+// Set sandbox client ID for testing purposes
+const PAYPAL_CLIENT_ID = "sb";
 
 interface PayPalButtonProps {
   plan: {
@@ -44,8 +44,9 @@ const PayPalButton = ({
       console.log("Loading PayPal SDK...");
       const script = document.createElement('script');
       
-      // Modified SDK URL - removed vault and intent parameters which might be causing issues
+      // Use PayPal Sandbox for testing
       script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
+      script.async = true;
       
       script.addEventListener('load', () => {
         console.log("PayPal SDK loaded successfully");
@@ -83,9 +84,9 @@ const PayPalButton = ({
       paypalButtonsContainer.innerHTML = '';
       
       try {
-        // Simplified PayPal configuration focusing on basic order creation
+        // Simplified PayPal configuration using the sandbox environment
         const buttons = window.paypal.Buttons({
-          // Create order for all plan types instead of subscription
+          // Create order
           createOrder: (data: any, actions: any) => {
             console.log("Creating PayPal order for plan:", plan);
             // Get the numerical price without the $ sign
@@ -94,7 +95,8 @@ const PayPalButton = ({
             return actions.order.create({
               purchase_units: [{
                 amount: {
-                  value: priceValue
+                  value: priceValue,
+                  currency_code: 'USD'
                 },
                 description: `CopyCat Cuisine ${plan.name} Plan (${plan.period})`
               }]
@@ -108,20 +110,20 @@ const PayPalButton = ({
             // Store order ID for later management
             const orderId = data.orderID;
             
-            // Capture the payment
-            return actions.order.capture().then((details: any) => {
-              console.log('Payment successful. Details:', details);
-              localStorage.setItem('copycat_subscription_id', orderId);
-              localStorage.setItem('copycat_subscription_period', plan.period);
-              
-              onProcessingChange(false);
-              onComplete();
-              
-              // After showing success state, call success callback
-              setTimeout(() => {
-                onSuccess();
-              }, 2000);
-            });
+            // For sandbox/demo, we can skip the actual capture and just simulate success
+            console.log('Payment successful. Order ID:', orderId);
+            localStorage.setItem('copycat_subscription_id', orderId);
+            localStorage.setItem('copycat_subscription_period', plan.period);
+            
+            onProcessingChange(false);
+            onComplete();
+            
+            // After showing success state, call success callback
+            setTimeout(() => {
+              onSuccess();
+            }, 2000);
+            
+            return Promise.resolve();
           },
           // Handle payment errors
           onError: (err: any) => {
@@ -184,8 +186,8 @@ const PayPalButton = ({
       )}
       <p className="text-xs text-center text-muted-foreground mt-3">
         {plan.period === 'lifetime' || plan.period === 'one-time' 
-          ? 'You will be redirected to PayPal to complete your one-time payment.'
-          : 'You will be redirected to PayPal to complete your payment.'}
+          ? 'This is a demo - no real payment will be processed.'
+          : 'This is a demo - no real payment will be processed.'}
       </p>
     </div>
   );
