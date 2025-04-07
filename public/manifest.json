@@ -43,17 +43,21 @@
         "*://*.dennys.com/*",
         "*://*.applebees.com/*",
         "*://*.cracker-barrel.com/*",
-        "*://*.popeyes.com/*"
+        "*://*.popeyes.com/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*"
       ],
       "js": ["assets/content_script.js"]
     }
   ],
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "contextMenus"
   ],
   "host_permissions": [
-    "https://*/*"
+    "https://*/*",
+    "http://*/*"
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
