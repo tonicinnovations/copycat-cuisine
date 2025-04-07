@@ -5,9 +5,6 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { createStripeCheckoutSession } from '@/utils/api/stripeService';
 
-// This would be your actual publishable key in production
-const STRIPE_PUBLISHABLE_KEY = "pk_test_TYooMQauvdEDq54NiTphI7jx";
-
 interface StripeButtonProps {
   plan: {
     name: string;
@@ -39,28 +36,12 @@ const StripeButton = ({
       console.log(`Processing ${plan.name} payment for ${plan.price}`);
       
       // Create a Stripe Checkout session and redirect
-      const checkoutSession = await createStripeCheckoutSession(plan);
+      await createStripeCheckoutSession(plan);
       
-      if (!checkoutSession) {
-        throw new Error("Failed to create checkout session");
-      }
-      
-      // In a real implementation, we'd redirect to the Stripe Checkout URL
-      // For now, simulate success after a delay
-      setTimeout(() => {
-        // Store subscription info in localStorage (for demo)
-        localStorage.setItem('copycat_subscription_id', checkoutSession.sessionId);
-        localStorage.setItem('copycat_subscription_period', plan.period);
-        
-        setIsLoading(false);
-        onProcessingChange(false);
-        onComplete();
-        
-        // After showing success state, call success callback
-        setTimeout(() => {
-          onSuccess();
-        }, 1500);
-      }, 2000);
+      // Note: The redirect will happen in the createStripeCheckoutSession function,
+      // so we don't need to handle success/error callbacks here
+      // The actual subscription verification will happen when the user returns
+      // from Stripe Checkout
       
     } catch (err) {
       console.error('Stripe payment error:', err);
