@@ -1,5 +1,5 @@
 
-import { Heart, Printer, Share2 } from 'lucide-react';
+import { Heart, Printer, Share2, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PremiumFeature from '@/components/PremiumFeature';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,7 @@ interface RecipeHeaderProps {
   onPrint: () => void;
   onShare: () => void;
   sourcesUsed?: string;
+  recipeImage?: string;
 }
 
 const RecipeHeader = ({
@@ -24,7 +25,8 @@ const RecipeHeader = ({
   onSave,
   onPrint,
   onShare,
-  sourcesUsed
+  sourcesUsed,
+  recipeImage
 }: RecipeHeaderProps) => {
   const handleShare = () => {
     try {
@@ -51,77 +53,89 @@ const RecipeHeader = ({
   };
 
   return (
-    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
-      <div>
-        <h1 className="text-3xl md:text-4xl font-display font-medium text-culinary-charcoal mb-2 leading-tight">
-          {title}
-        </h1>
-        <p className="text-muted-foreground">
-          Inspired by {originalSource}
-        </p>
-        {sourcesUsed && sourcesUsed.trim() !== "" && (
-          <p className="text-sm text-culinary-copper mt-1">
-            {sourcesUsed}
-          </p>
-        )}
-      </div>
+    <div className="flex flex-col gap-4 mb-6">
+      {recipeImage && (
+        <div className="w-full rounded-lg overflow-hidden mb-2 border border-culinary-beige">
+          <img 
+            src={recipeImage} 
+            alt={`${title} recipe`} 
+            className="w-full h-auto object-cover max-h-[300px]"
+          />
+        </div>
+      )}
       
-      <div className="flex flex-wrap gap-2 print:hidden">
-        <PremiumFeature 
-          isPremium={isPremium} 
-          featureName="Save Recipe"
-          className="inline-block"
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "flex items-center gap-1 border-culinary-beige",
-              isSaved 
-                ? "bg-culinary-copper/10 text-culinary-copper border-culinary-copper" 
-                : "hover:bg-culinary-beige/30"
-            )}
-            onClick={onSave}
-            disabled={!isPremium}
-          >
-            <Heart size={16} fill={isSaved ? "currentColor" : "none"} />
-            <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
-          </Button>
-        </PremiumFeature>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-display font-medium text-culinary-charcoal mb-2 leading-tight">
+            {title}
+          </h1>
+          <p className="text-muted-foreground">
+            Inspired by {originalSource}
+          </p>
+          {sourcesUsed && sourcesUsed.trim() !== "" && (
+            <p className="text-sm text-culinary-copper mt-1">
+              {sourcesUsed}
+            </p>
+          )}
+        </div>
         
-        <PremiumFeature 
-          isPremium={isPremium} 
-          featureName="Print Recipe"
-          className="inline-block"
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-1 border-culinary-beige hover:bg-culinary-beige/30"
-            onClick={onPrint}
-            disabled={!isPremium}
+        <div className="flex flex-wrap gap-2 print:hidden">
+          <PremiumFeature 
+            isPremium={isPremium} 
+            featureName="Save Recipe"
+            className="inline-block"
           >
-            <Printer size={16} />
-            <span className="hidden sm:inline">Print</span>
-          </Button>
-        </PremiumFeature>
-        
-        <PremiumFeature 
-          isPremium={isPremium} 
-          featureName="Share Recipe"
-          className="inline-block"
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-1 border-culinary-beige hover:bg-culinary-beige/30"
-            onClick={handleShare}
-            disabled={!isPremium}
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                "flex items-center gap-1 border-culinary-beige",
+                isSaved 
+                  ? "bg-culinary-copper/10 text-culinary-copper border-culinary-copper" 
+                  : "hover:bg-culinary-beige/30"
+              )}
+              onClick={onSave}
+              disabled={!isPremium}
+            >
+              <Heart size={16} fill={isSaved ? "currentColor" : "none"} />
+              <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
+            </Button>
+          </PremiumFeature>
+          
+          <PremiumFeature 
+            isPremium={isPremium} 
+            featureName="Print Recipe"
+            className="inline-block"
           >
-            <Share2 size={16} />
-            <span className="hidden sm:inline">Share</span>
-          </Button>
-        </PremiumFeature>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1 border-culinary-beige hover:bg-culinary-beige/30"
+              onClick={onPrint}
+              disabled={!isPremium}
+            >
+              <Printer size={16} />
+              <span className="hidden sm:inline">Print</span>
+            </Button>
+          </PremiumFeature>
+          
+          <PremiumFeature 
+            isPremium={isPremium} 
+            featureName="Share Recipe"
+            className="inline-block"
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1 border-culinary-beige hover:bg-culinary-beige/30"
+              onClick={handleShare}
+              disabled={!isPremium}
+            >
+              <Share2 size={16} />
+              <span className="hidden sm:inline">Share</span>
+            </Button>
+          </PremiumFeature>
+        </div>
       </div>
     </div>
   );

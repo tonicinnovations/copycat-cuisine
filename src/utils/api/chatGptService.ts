@@ -1,3 +1,4 @@
+
 import { generateWhimsicalIntro, generateWhimsicalNotFoundMessage } from "./whimsicalMessages";
 
 // Function to fetch a recipe from ChatGPT with whimsical responses
@@ -35,7 +36,8 @@ export const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Pro
         "notes": "[any special notes or tips]",
         "whimsicalIntro": "[your fun introduction from Part 1]",
         "endingQuestion": "Would you like to find more copycat recipes? I've got a chef's hat full of them!",
-        "sourcesUsed": "[IMPORTANT: ONLY include topsecretrecipes.com here if you actually found and used information from this site for this specific recipe. Otherwise, leave this field empty.]"
+        "sourcesUsed": "[IMPORTANT: ONLY include topsecretrecipes.com here if you actually found and used information from this site for this specific recipe. Otherwise, leave this field empty.]",
+        "recipeImage": "[IMPORTANT: ONLY if you found this recipe on topsecretrecipes.com, provide a suitable generic food image URL that represents this dish. Otherwise, leave this field empty.]"
       }
       
       If you genuinely cannot find a specific copycat recipe after extensive research, respond with a fun message like:
@@ -112,9 +114,35 @@ export const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Pro
         // Only add the topsecretrecipes.com attribution if it was explicitly mentioned as a source
         if (recipeData.sourcesUsed && recipeData.sourcesUsed.toLowerCase().includes('topsecretrecipes.com')) {
           recipeData.sourcesUsed = "Our search includes recipe sources like topsecretrecipes.com to find the best copycat versions!";
+          
+          // If no recipeImage was provided but topsecretrecipes.com was used, set a default food image
+          if (!recipeData.recipeImage) {
+            // Set a placeholder recipe image based on the dish type
+            const title = recipeData.title.toLowerCase();
+            if (title.includes('chicken')) {
+              recipeData.recipeImage = "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=800";
+            } else if (title.includes('pasta') || title.includes('alfredo') || title.includes('spaghetti')) {
+              recipeData.recipeImage = "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=800";
+            } else if (title.includes('burger') || title.includes('sandwich')) {
+              recipeData.recipeImage = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800";
+            } else if (title.includes('pizza')) {
+              recipeData.recipeImage = "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800";
+            } else if (title.includes('dessert') || title.includes('cake') || title.includes('cookie') || title.includes('brownie')) {
+              recipeData.recipeImage = "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=800";
+            } else if (title.includes('soup') || title.includes('stew') || title.includes('chili')) {
+              recipeData.recipeImage = "https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?auto=format&fit=crop&w=800";
+            } else if (title.includes('salad')) {
+              recipeData.recipeImage = "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800";
+            } else if (title.includes('bread') || title.includes('biscuit')) {
+              recipeData.recipeImage = "https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&w=800";
+            } else {
+              recipeData.recipeImage = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800";
+            }
+          }
         } else {
           // Otherwise, don't mention topsecretrecipes.com
           recipeData.sourcesUsed = "";
+          recipeData.recipeImage = ""; // No image if not from topsecretrecipes.com
         }
       }
       

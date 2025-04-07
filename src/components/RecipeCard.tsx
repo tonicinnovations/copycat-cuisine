@@ -26,6 +26,8 @@ interface RecipeCardProps {
     cookTime: string;
     servings: number;
     notes?: string;
+    sourcesUsed?: string;
+    recipeImage?: string;
   };
   isPremium?: boolean;
 }
@@ -143,6 +145,8 @@ const RecipeCard = ({ recipe, isPremium = false }: RecipeCardProps) => {
           onSave={handleSaveRecipe}
           onPrint={handlePrint}
           onShare={handleShare}
+          sourcesUsed={recipe.sourcesUsed}
+          recipeImage={recipe.recipeImage}
         />
         
         <RecipeRating 
