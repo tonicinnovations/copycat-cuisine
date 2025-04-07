@@ -1,73 +1,8 @@
 
-import { toast } from "sonner";
-import { getPremiumStatus } from "../storage";
 import { generateWhimsicalIntro, generateWhimsicalNotFoundMessage } from "./whimsicalMessages";
 
-// Hardcoded OpenAI API key
-const OPENAI_API_KEY = "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"; // Real API key
-
-// Function to get recipes - uses real ChatGPT API, falls back to simulation
-export const getRecipe = async (query: string): Promise<any> => {
-  const isPremium = getPremiumStatus().isPremium;
-  
-  try {
-    // Always use the real ChatGPT API with the hardcoded key
-    const result = await fetchRecipeFromChatGPT(query, OPENAI_API_KEY);
-    
-    // If recipe was not found, try again with a more generalized query
-    if (result.notFound) {
-      // Extract the main dish name without restaurant specifics if possible
-      const simplifiedQuery = simplifyQuery(query);
-      
-      // Only try the simplified query if it's different from the original
-      if (simplifiedQuery !== query) {
-        console.log(`Recipe not found. Trying simplified query: ${simplifiedQuery}`);
-        const secondAttempt = await fetchRecipeFromChatGPT(simplifiedQuery, OPENAI_API_KEY);
-        
-        // If second attempt succeeded, add a note about the adaptation
-        if (!secondAttempt.notFound) {
-          secondAttempt.notes = (secondAttempt.notes || "") + 
-            " This recipe has been adapted as a copycat version of the restaurant dish you requested.";
-          return secondAttempt;
-        }
-      }
-    }
-    
-    return result;
-  } catch (error) {
-    console.error("Error in getRecipe:", error);
-    // Always return something, don't let errors bubble up
-    return {
-      notFound: true,
-      query,
-      message: generateWhimsicalNotFoundMessage(query),
-      endingQuestion: "Would you like to try another recipe? My cookbook is overflowing with other tasty secrets!"
-    };
-  }
-};
-
-// Helper function to simplify queries by removing restaurant names or specific context
-const simplifyQuery = (query: string): string => {
-  // Remove "from [restaurant]" patterns
-  let simplified = query.replace(/ from .+$/i, '').trim();
-  
-  // Remove possessive forms
-  simplified = simplified.replace(/'s\s+/g, ' ').trim();
-  
-  // Remove common words that might confuse the search
-  const wordsToRemove = ['copycat', 'recipe', 'restaurant', 'style', 'homemade'];
-  for (const word of wordsToRemove) {
-    simplified = simplified.replace(new RegExp(`\\b${word}\\b`, 'gi'), '').trim();
-  }
-  
-  // Replace multiple spaces with a single space
-  simplified = simplified.replace(/\s+/g, ' ').trim();
-  
-  return simplified;
-};
-
 // Function to fetch a recipe from ChatGPT with whimsical responses
-const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<any> => {
+export const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<any> => {
   try {
     const cleanQuery = query.trim();
     
@@ -196,23 +131,4 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
       endingQuestion: "Would you like to try another recipe? My cookbook is overflowing with other tasty secrets!"
     };
   }
-};
-
-// Function to simulate processing a payment
-export const processPayment = async (plan: string, paymentDetails: any): Promise<boolean> => {
-  return new Promise((resolve) => {
-    // Simulate payment processing delay
-    setTimeout(() => {
-      // Always succeed for demo purposes
-      const success = true;
-      
-      if (success) {
-        toast.success(`Successfully upgraded to ${plan} plan!`);
-      } else {
-        toast.error("Payment processing failed. Please try again.");
-      }
-      
-      resolve(success);
-    }, 2000);
-  });
 };

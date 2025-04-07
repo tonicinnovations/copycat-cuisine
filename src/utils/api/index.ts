@@ -1,3 +1,4 @@
 
 // Re-export all API-related functions
-export { getRecipe, processPayment } from './recipeApi';
+export { getRecipe } from './recipeService';
+export { processPayment } from './paymentService';
