@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { createStripeCheckoutSession } from '@/utils/api/stripeService';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface StripeButtonProps {
   plan: {
@@ -36,16 +37,18 @@ const StripeButton = ({
       console.log(`Processing ${plan.name} payment for ${plan.price}`);
       
       // Create a Stripe Checkout session and redirect
-      await createStripeCheckoutSession(plan);
+      const result = await createStripeCheckoutSession(plan);
+      
+      if (!result) {
+        throw new Error("Failed to create checkout session");
+      }
       
       // Note: The redirect will happen in the createStripeCheckoutSession function,
       // so we don't need to handle success/error callbacks here
-      // The actual subscription verification will happen when the user returns
-      // from Stripe Checkout
       
-    } catch (err) {
+    } catch (err: any) {
       console.error('Stripe payment error:', err);
-      setError('Failed to process payment. Please try again.');
+      setError(err.message || 'Failed to process payment. Please try again.');
       toast.error('Payment processing failed');
       onProcessingChange(false);
       setIsLoading(false);

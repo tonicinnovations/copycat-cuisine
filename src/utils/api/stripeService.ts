@@ -1,5 +1,11 @@
 
 import { toast } from "sonner";
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Function to redirect to Stripe Checkout
 export const processStripePayment = async (plan: string, paymentDetails: any): Promise<boolean> => {
@@ -26,16 +32,8 @@ export const createStripeCheckoutSession = async (plan: {
     const priceInDollars = parseFloat(plan.price.replace('$', ''));
     const priceInCents = Math.round(priceInDollars * 100);
     
-    // Get authentication token if available (for future implementation)
-    const token = localStorage.getItem('supabase.auth.token');
-    
     // Call Supabase Edge Function to create a checkout session
-    const response = await fetch('/api/create-checkout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      },
+    const { data, error } = await supabase.functions.invoke("create-checkout", {
       body: JSON.stringify({
         plan: {
           name: `CopyCat Cuisine ${plan.name} Plan`,
@@ -45,13 +43,13 @@ export const createStripeCheckoutSession = async (plan: {
         }
       })
     });
-    
-    if (!response.ok) {
-      const error = await response.json();
+
+    if (error) {
+      console.error("Error calling create-checkout function:", error);
       throw new Error(error.message || 'Failed to create checkout session');
     }
     
-    const { url, sessionId } = await response.json();
+    const { url, sessionId } = data;
     
     // For lifetime plan (one-time payment), store this info in localStorage
     // In a real implementation, this would be stored in a database
@@ -74,22 +72,15 @@ export const createStripeCheckoutSession = async (plan: {
 // Helper function to verify subscription status
 export const verifySubscription = async (): Promise<boolean> => {
   try {
-    // Get authentication token if available
-    const token = localStorage.getItem('supabase.auth.token');
-    
     // Call Supabase Edge Function to verify subscription status
-    const response = await fetch('/api/check-subscription', {
-      method: 'GET',
-      headers: {
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      }
-    });
+    const { data, error } = await supabase.functions.invoke("check-subscription");
     
-    if (!response.ok) {
-      throw new Error('Failed to verify subscription');
+    if (error) {
+      console.error("Error calling check-subscription function:", error);
+      throw new Error(error.message || 'Failed to verify subscription');
     }
     
-    const { subscribed } = await response.json();
+    const { subscribed } = data;
     return subscribed;
   } catch (error) {
     console.error("Error verifying subscription:", error);

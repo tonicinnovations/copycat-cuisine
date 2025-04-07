@@ -14,14 +14,36 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
+  // Initialize Supabase client
+  let supabaseClient;
+  try {
+    supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+    
+    if (!Deno.env.get("SUPABASE_URL") || !Deno.env.get("SUPABASE_ANON_KEY")) {
+      throw new Error("Missing Supabase URL or anon key in environment");
+    }
+  } catch (error) {
+    console.error("Supabase client initialization error:", error);
+    return new Response(JSON.stringify({ 
+      error: "Failed to initialize Supabase client",
+      details: error.message 
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+    });
+  }
 
   try {
     // Parse request body
-    const { plan } = await req.json();
+    const requestData = await req.json();
+    const { plan } = requestData;
+
+    if (!plan || !plan.name || !plan.priceInCents) {
+      throw new Error("Invalid plan data");
+    }
 
     // Get user from auth header if available
     let user = null;
@@ -33,9 +55,26 @@ serve(async (req) => {
     }
 
     // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2023-10-16",
-    });
+    let stripe;
+    try {
+      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+      if (!stripeKey) {
+        throw new Error("STRIPE_SECRET_KEY is not set in environment variables");
+      }
+      
+      stripe = new Stripe(stripeKey, {
+        apiVersion: "2023-10-16",
+      });
+    } catch (error) {
+      console.error("Stripe initialization error:", error);
+      return new Response(JSON.stringify({ 
+        error: "Failed to initialize Stripe",
+        details: error.message 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
 
     // Check if an existing Stripe customer record exists
     let customerId;
@@ -89,7 +128,10 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Error creating checkout session:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      stack: error.stack
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
