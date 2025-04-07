@@ -106,6 +106,9 @@ const Index = () => {
                 If no results are found, try the opposite way, Restaurant or brand name followed by menu item. 
                 If still no results, try your search again. Sometimes I need just a little more time.
               </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                We search multiple sources including <span className="font-medium text-culinary-copper">topsecretrecipes.com</span> to find the best copycat recipes!
+              </p>
             </motion.div>
             
             <SearchBar isPremium={isPremium} />

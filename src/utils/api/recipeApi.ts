@@ -72,11 +72,13 @@ const fetchRecipeFromChatGPT = async (query: string, apiKey: string): Promise<an
     const cleanQuery = query.trim();
     
     // Enhanced prompt with whimsical, fun response style and more explicit instructions
-    // to always return a recipe if possible
+    // to always return a recipe if possible, now including topsecretrecipes.com as a resource
     const prompt = `
       As a fun, whimsical culinary expert, your task is to provide a copycat recipe for "${cleanQuery}" with personality and flair.
       
       Research this recipe thoroughly. If this is a chain restaurant dish (like Olive Garden, Red Lobster, Cheesecake Factory, etc.) or a classic restaurant dish, please be extra diligent in providing the most authentic recipe.
+      
+      IMPORTANT: Make sure to check topsecretrecipes.com as one of your research sources for copycat recipes, but this should NOT be your only source.
       
       IMPORTANT: If you cannot find the exact recipe, you should provide a SIMILAR recipe that would be a close substitute. NEVER say you can't find a recipe unless you've exhaustively searched and confirmed nothing similar exists.
       
