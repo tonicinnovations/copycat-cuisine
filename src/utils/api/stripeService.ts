@@ -32,6 +32,8 @@ export const createStripeCheckoutSession = async (plan: {
     const priceInDollars = parseFloat(plan.price.replace('$', ''));
     const priceInCents = Math.round(priceInDollars * 100);
     
+    console.log('Creating Stripe checkout session for:', plan.name, 'at price:', priceInCents, 'cents');
+    
     // Call Supabase Edge Function to create a checkout session
     const { data, error } = await supabase.functions.invoke("create-checkout", {
       body: JSON.stringify({
@@ -49,7 +51,13 @@ export const createStripeCheckoutSession = async (plan: {
       throw new Error(error.message || 'Failed to create checkout session');
     }
     
+    if (!data || !data.url) {
+      console.error("Invalid response from create-checkout function:", data);
+      throw new Error('Invalid response from checkout service');
+    }
+    
     const { url, sessionId } = data;
+    console.log('Checkout session created:', sessionId, 'redirecting to:', url);
     
     // For lifetime plan (one-time payment), store this info in localStorage
     // In a real implementation, this would be stored in a database

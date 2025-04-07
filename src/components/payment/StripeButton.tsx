@@ -36,6 +36,11 @@ const StripeButton = ({
       
       console.log(`Processing ${plan.name} payment for ${plan.price}`);
       
+      // Check if Supabase is properly initialized
+      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        throw new Error("Supabase configuration is missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.");
+      }
+      
       // Create a Stripe Checkout session and redirect
       const result = await createStripeCheckoutSession(plan);
       
@@ -43,8 +48,9 @@ const StripeButton = ({
         throw new Error("Failed to create checkout session");
       }
       
-      // Note: The redirect will happen in the createStripeCheckoutSession function,
-      // so we don't need to handle success/error callbacks here
+      // The redirect will happen in the createStripeCheckoutSession function
+      // This code will only run if the redirect doesn't happen
+      toast.success("Redirecting to Stripe checkout...");
       
     } catch (err: any) {
       console.error('Stripe payment error:', err);
