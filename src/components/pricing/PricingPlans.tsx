@@ -16,7 +16,7 @@ const PricingPlans = ({ onSelectPlan }: PricingPlansProps) => {
       >
         <PricingCard
           title="Monthly"
-          price="$2.99"
+          price="$5.99"
           period="month"
           description="Perfect for short-term culinary adventures"
           features={[
@@ -27,7 +27,7 @@ const PricingPlans = ({ onSelectPlan }: PricingPlansProps) => {
             "Dietary substitutions"
           ]}
           ctaText="Subscribe Monthly"
-          onSelect={() => onSelectPlan("Monthly", "$2.99", "month")}
+          onSelect={() => onSelectPlan("Monthly", "$5.99", "month")}
         />
       </motion.div>
       
@@ -38,7 +38,7 @@ const PricingPlans = ({ onSelectPlan }: PricingPlansProps) => {
       >
         <PricingCard
           title="Annual"
-          price="$29.99"
+          price="$49.99"
           period="year"
           description="Our most popular plan - save over 15%"
           features={[
@@ -51,7 +51,7 @@ const PricingPlans = ({ onSelectPlan }: PricingPlansProps) => {
           ]}
           isPopular
           ctaText="Subscribe Annually"
-          onSelect={() => onSelectPlan("Annual", "$29.99", "year")}
+          onSelect={() => onSelectPlan("Annual", "$49.99", "year")}
         />
       </motion.div>
       
@@ -62,7 +62,7 @@ const PricingPlans = ({ onSelectPlan }: PricingPlansProps) => {
       >
         <PricingCard
           title="Lifetime"
-          price="$99.99"
+          price="$129.99"
           period="one-time"
           description="One payment, unlimited access forever"
           features={[
@@ -75,7 +75,7 @@ const PricingPlans = ({ onSelectPlan }: PricingPlansProps) => {
             "Free future updates"
           ]}
           ctaText="Get Lifetime Access"
-          onSelect={() => onSelectPlan("Lifetime", "$99.99", "lifetime")}
+          onSelect={() => onSelectPlan("Lifetime", "$129.99", "lifetime")}
         />
       </motion.div>
     </div>
