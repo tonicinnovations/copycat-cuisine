@@ -15,7 +15,7 @@ const PayPalLoadError = ({ errorMessage, onRetry }: PayPalLoadErrorProps) => {
         <p className="font-medium">{errorMessage}</p>
       </div>
       <p className="text-sm text-muted-foreground mb-3">
-        Since this is a demo environment, you can continue with the demo experience.
+        This could be due to a network issue or browser settings.
       </p>
       <div className="flex flex-col sm:flex-row justify-center gap-3">
         <Button 

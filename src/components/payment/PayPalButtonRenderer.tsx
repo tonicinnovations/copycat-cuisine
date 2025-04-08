@@ -38,7 +38,7 @@ const PayPalButtonRenderer = ({
       paypalButtonsContainer.innerHTML = '';
       
       try {
-        // Simplified PayPal configuration using the sandbox environment
+        // Create proper PayPal buttons configuration
         const buttons = window.paypal.Buttons({
           // Create order
           createOrder: (data: any, actions: any) => {
@@ -61,23 +61,24 @@ const PayPalButtonRenderer = ({
             console.log("PayPal payment approved:", data);
             onProcessingChange(true);
             
-            // Store order ID for later management
-            const orderId = data.orderID;
-            
-            // For sandbox/demo, we can skip the actual capture and just simulate success
-            console.log('Payment successful. Order ID:', orderId);
-            localStorage.setItem('copycat_subscription_id', orderId);
-            localStorage.setItem('copycat_subscription_period', plan.period);
-            
-            onProcessingChange(false);
-            onComplete();
-            
-            // After showing success state, call success callback
-            setTimeout(() => {
-              onSuccess();
-            }, 2000);
-            
-            return Promise.resolve();
+            // Capture the funds from the transaction
+            return actions.order.capture().then(function(details: any) {
+              console.log('Payment completed successfully:', details);
+              
+              // Store order ID for later management
+              const orderId = details.id;
+              localStorage.setItem('copycat_subscription_id', orderId);
+              localStorage.setItem('copycat_subscription_period', plan.period);
+              
+              toast.success('Payment processed successfully');
+              onProcessingChange(false);
+              onComplete();
+              
+              // After showing success state, call success callback
+              setTimeout(() => {
+                onSuccess();
+              }, 1000);
+            });
           },
           // Handle payment errors
           onError: (err: any) => {

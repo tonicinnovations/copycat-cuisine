@@ -3,8 +3,8 @@
 export const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 export const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-// Set to true for demo mode without real payments
-const DEMO_MODE = true; 
+// Set to false for production mode with real payments
+const DEMO_MODE = false; 
 
 // Helper function to check if Supabase is properly configured
 export const isSupabaseConfigured = (): boolean => {
