@@ -3,9 +3,6 @@ import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { createStripeCheckoutSession } from '@/utils/api/stripeService';
-import { isSupabaseConfigured } from '@/utils/api/supabaseConfig';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface StripeButtonProps {
   plan: {
@@ -37,23 +34,26 @@ const StripeButton = ({
       
       console.log(`Processing ${plan.name} payment for ${plan.price}`);
       
-      // Check if Supabase is configured before proceeding
-      if (!isSupabaseConfigured()) {
-        throw new Error("Supabase is not configured. Cannot process real payments without Supabase configuration.");
-      }
-      
-      // Create a Stripe Checkout session and redirect
-      const result = await createStripeCheckoutSession(plan);
-      
-      if (!result) {
-        throw new Error("Failed to create checkout session");
-      }
-      
-      // The redirect will happen in the createStripeCheckoutSession function
-      toast.success("Redirecting to Stripe checkout...");
+      // Simulate payment processing
+      setTimeout(() => {
+        // For demo purposes, we'll simulate a successful payment
+        console.log('Payment successful');
+        toast.success('Payment processed successfully!');
+        localStorage.setItem('copycat_subscription_id', 'simulated-payment-id');
+        localStorage.setItem('copycat_subscription_period', plan.period);
+        
+        setIsLoading(false);
+        onProcessingChange(false);
+        onComplete();
+        
+        // After showing success state, call success callback
+        setTimeout(() => {
+          onSuccess();
+        }, 1000);
+      }, 2000);
       
     } catch (err: any) {
-      console.error('Stripe payment error:', err);
+      console.error('Payment error:', err);
       setError(err.message || 'Failed to process payment. Please try again.');
       toast.error('Payment processing failed');
       onProcessingChange(false);
@@ -76,17 +76,11 @@ const StripeButton = ({
             Try Again
           </Button>
         </div>
-      ) : !isSupabaseConfigured() ? (
-        <Alert className="mb-4 bg-red-50 border-red-200">
-          <AlertDescription className="text-red-800">
-            Supabase configuration is missing. Real payments require Supabase configuration.
-          </AlertDescription>
-        </Alert>
       ) : null}
       
       <Button
         onClick={handlePayment}
-        disabled={isLoading || !isSupabaseConfigured()}
+        disabled={isLoading}
         className="w-full bg-[#6772E5] hover:bg-[#556CD6]"
       >
         {isLoading ? (
@@ -131,10 +125,7 @@ const StripeButton = ({
         )}
       </Button>
       <p className="text-xs text-center text-muted-foreground mt-3">
-        {!isSupabaseConfigured() 
-          ? 'Please configure Supabase to enable real payments.'
-          : 'For testing, use card number 4242 4242 4242 4242'
-        }
+        This is a demo - no real payment will be processed
       </p>
     </div>
   );

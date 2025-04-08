@@ -3,11 +3,16 @@
 export const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 export const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-// Set to false to use real payment gateway
-const MOCK_MODE = false; 
+// Set to true for demo mode without real payments
+const DEMO_MODE = true; 
 
 // Helper function to check if Supabase is properly configured
 export const isSupabaseConfigured = (): boolean => {
+  if (DEMO_MODE) {
+    // In demo mode, we don't need Supabase to be configured
+    return true;
+  }
+  
   const configured = !!(supabaseUrl && supabaseAnonKey);
   
   if (!configured) {

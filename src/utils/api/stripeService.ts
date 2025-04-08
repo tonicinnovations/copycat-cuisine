@@ -1,27 +1,10 @@
 
 import { toast } from "sonner";
-import { createClient } from '@supabase/supabase-js';
-import { supabaseUrl, supabaseAnonKey, isSupabaseConfigured } from './supabaseConfig';
 
-// Initialize Supabase client only if configuration is available
-let supabase: ReturnType<typeof createClient> | null = null;
-
-try {
-  if (supabaseUrl && supabaseAnonKey) {
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
-    console.log('Supabase client initialized');
-  } else {
-    console.error('Supabase client not initialized due to missing configuration');
-  }
-} catch (error) {
-  console.error('Failed to initialize Supabase client:', error);
-}
-
-// Function to redirect to Stripe Checkout
+// Function to simulate a Stripe payment
 export const processStripePayment = async (plan: string, paymentDetails: any): Promise<boolean> => {
   try {
-    // This function is kept for backwards compatibility
-    // In a real implementation, this would redirect to Stripe Checkout
+    // This is a simulated payment - in a real implementation, this would call Stripe API
     toast.success(`Successfully upgraded to ${plan} plan!`);
     return true;
   } catch (error) {
@@ -31,66 +14,34 @@ export const processStripePayment = async (plan: string, paymentDetails: any): P
   }
 };
 
-// Create a Stripe Checkout session and redirect the user
+// Create a simulated Stripe Checkout session
 export const createStripeCheckoutSession = async (plan: {
   name: string;
   price: string;
   period: string;
 }): Promise<{ sessionId: string; url: string } | null> => {
   try {
-    // Check if Supabase is properly configured
-    if (!isSupabaseConfigured()) {
-      throw new Error('Supabase is not configured. Real payment gateway requires Supabase configuration.');
-    }
+    // This is a simulated checkout process for demo purposes
+    console.log('Creating simulated checkout session for:', plan.name, 'at price:', plan.price);
     
-    if (!supabase) {
-      throw new Error('Supabase client is not initialized. Cannot process payment without proper configuration.');
-    }
+    // Generate a random session ID
+    const sessionId = 'sim_' + Math.random().toString(36).substring(2, 15);
     
-    // Convert price from string format (e.g., "$49.99") to cents for Stripe
-    const priceInDollars = parseFloat(plan.price.replace('$', ''));
-    const priceInCents = Math.round(priceInDollars * 100);
-    
-    console.log('Creating Stripe checkout session for:', plan.name, 'at price:', priceInCents, 'cents');
-    
-    // Call Supabase Edge Function to create a checkout session
-    const { data, error } = await supabase.functions.invoke("create-checkout", {
-      body: JSON.stringify({
-        plan: {
-          name: `CopyCat Cuisine ${plan.name} Plan`,
-          priceInCents,
-          interval: plan.period === 'month' ? 'month' : 
-                   plan.period === 'year' ? 'year' : null
-        }
-      })
-    });
-
-    if (error) {
-      console.error("Error calling create-checkout function:", error);
-      throw new Error(error.message || 'Failed to create checkout session');
-    }
-    
-    if (!data || !data.url) {
-      console.error("Invalid response from create-checkout function:", data);
-      throw new Error('Invalid response from checkout service');
-    }
-    
-    const { url, sessionId } = data;
-    console.log('Checkout session created:', sessionId, 'redirecting to:', url);
+    // In a real implementation, this would redirect to Stripe Checkout
+    // For demo purposes, we'll delay and then simulate success
+    toast.success("Processing payment...");
     
     // For lifetime plan (one-time payment), store this info in localStorage
-    // In a real implementation, this would be stored in a database
-    if (plan.period === 'lifetime') {
-      localStorage.setItem('copycat_subscription_id', sessionId);
-      localStorage.setItem('copycat_subscription_period', plan.period);
-    }
+    localStorage.setItem('copycat_subscription_id', sessionId);
+    localStorage.setItem('copycat_subscription_period', plan.period);
     
-    // Redirect to Stripe Checkout
-    window.location.href = url;
-    
-    return { sessionId, url };
+    // Return simulated checkout session
+    return { 
+      sessionId, 
+      url: '#simulated-checkout' // This would normally be a Stripe checkout URL
+    };
   } catch (error) {
-    console.error("Error creating Stripe checkout session:", error);
+    console.error("Error creating checkout session:", error);
     toast.error("Failed to initialize payment. Please try again.");
     return null;
   }
@@ -99,26 +50,10 @@ export const createStripeCheckoutSession = async (plan: {
 // Helper function to verify subscription status
 export const verifySubscription = async (): Promise<boolean> => {
   try {
-    // Check if Supabase is properly configured
-    if (!isSupabaseConfigured()) {
-      console.error('Supabase is not configured, subscription verification will always return false');
-      return false;
-    }
-    
-    if (!supabase) {
-      throw new Error('Supabase client is not initialized');
-    }
-    
-    // Call Supabase Edge Function to verify subscription status
-    const { data, error } = await supabase.functions.invoke("check-subscription");
-    
-    if (error) {
-      console.error("Error calling check-subscription function:", error);
-      throw new Error(error.message || 'Failed to verify subscription');
-    }
-    
-    const { subscribed } = data;
-    return subscribed;
+    // In a real implementation, this would verify the subscription with Stripe
+    // For demo purposes, we'll check localStorage
+    const subscriptionId = localStorage.getItem('copycat_subscription_id');
+    return !!subscriptionId;
   } catch (error) {
     console.error("Error verifying subscription:", error);
     return false;
