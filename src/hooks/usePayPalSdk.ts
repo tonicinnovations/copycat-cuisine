@@ -52,29 +52,38 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
     const existingScripts = document.querySelectorAll('script[src*="paypal.com/sdk/js"]');
     existingScripts.forEach(script => {
       console.log("Removing existing PayPal script");
-      document.body.removeChild(script);
+      script.parentNode?.removeChild(script);
     });
     
     // Create script element
     const script = document.createElement('script');
     
-    // Use the basic SDK URL with minimal parameters
-    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}`;
+    // Use the basic SDK URL with minimal parameters - using the direct URL format
+    script.src = `https://www.paypalobjects.com/api/checkout.js`;
     script.async = true;
     script.defer = true;
     script.id = "paypal-sdk-script";
+    script.dataset.clientId = PAYPAL_CLIENT_ID;
     
     const handleLoad = () => {
       console.log("PayPal SDK loaded successfully!");
-      setIsLoading(false);
-      setPaypalLoaded(true);
-      setLoadAttempts(0); // Reset attempts on success
+      // Verify that the window.paypal object actually exists after loading
+      if (window.paypal) {
+        console.log("PayPal global object confirmed after script load");
+        setIsLoading(false);
+        setPaypalLoaded(true);
+        setLoadAttempts(0); // Reset attempts on success
+      } else {
+        console.error("Script loaded but PayPal global object not found");
+        setIsLoading(false);
+        setLoadError("PayPal loaded but failed to initialize. Try refreshing the page.");
+      }
     };
     
     const handleError = (e: Event) => {
       console.error("Error loading PayPal SDK:", e);
       setIsLoading(false);
-      setLoadError("Failed to load PayPal. Please check your network connection or try again later.");
+      setLoadError("Failed to load PayPal. Please check your internet connection or try again later.");
       setLoadAttempts(prev => prev + 1);
       
       // Only show toast on first error
@@ -128,10 +137,10 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
     setPaypalLoaded(false);
     
     // Remove any existing PayPal scripts
-    const existingScripts = document.querySelectorAll('script[src*="paypal.com/sdk/js"]');
+    const existingScripts = document.querySelectorAll('script[src*="paypal.com"]');
     existingScripts.forEach(script => {
       console.log("Removing existing PayPal script during retry");
-      document.body.removeChild(script);
+      script.parentNode?.removeChild(script);
     });
     
     // Also check if the global paypal object exists and attempt to clean it

@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, ExternalLink } from 'lucide-react';
 
 interface PayPalLoadErrorProps {
   errorMessage: string;
@@ -19,8 +19,8 @@ const PayPalLoadError = ({ errorMessage, onRetry }: PayPalLoadErrorProps) => {
         <ul className="mt-2 space-y-1 list-disc list-inside">
           <li>Temporary network connection issues</li>
           <li>PayPal service disruption</li>
-          <li>Browser cache or cookie problems</li>
-          <li>Corporate network or firewall restrictions</li>
+          <li>Browser cookie, cache, or security settings</li>
+          <li>Browser extensions or privacy/security settings</li>
         </ul>
       </p>
       <div className="flex flex-col sm:flex-row justify-center gap-3">
@@ -40,9 +40,19 @@ const PayPalLoadError = ({ errorMessage, onRetry }: PayPalLoadErrorProps) => {
         >
           Reload Page
         </Button>
+        
+        <Button 
+          onClick={() => window.open('https://www.paypal.com/us/smarthelp/article/troubleshoot-paypal-checkout-ts2173', '_blank')}
+          variant="outline"
+          className="mt-2 gap-2"
+        >
+          <ExternalLink size={16} />
+          PayPal Help
+        </Button>
       </div>
       <p className="text-xs text-muted-foreground mt-4">
-        Try using a different browser or clearing your browser cache if the problem persists.
+        If this issue persists, please try using a different browser or device, 
+        or clearing your browser cache and cookies.
       </p>
     </div>
   );
