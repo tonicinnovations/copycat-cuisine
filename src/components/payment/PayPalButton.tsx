@@ -1,8 +1,10 @@
 
-import { Loader2 } from 'lucide-react';
+import { Loader2, CreditCard } from 'lucide-react';
 import { usePayPalSdk } from '@/hooks/usePayPalSdk';
 import PayPalButtonRenderer from './PayPalButtonRenderer';
 import PayPalLoadError from './PayPalLoadError';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface PayPalButtonProps {
   plan: {
@@ -16,13 +18,47 @@ interface PayPalButtonProps {
 const PayPalButton = ({ plan, onSuccess }: PayPalButtonProps) => {
   const { paypalLoaded, loadError, isLoading, retryLoading } = usePayPalSdk();
 
+  const handleDemoPayment = () => {
+    // Simulate successful payment for testing
+    console.log("Processing demo payment for:", plan);
+    localStorage.setItem('copycat_subscription_id', 'demo-subscription-' + Date.now());
+    localStorage.setItem('copycat_subscription_period', plan.period);
+    
+    toast.success('Demo payment processed successfully!');
+    setTimeout(() => onSuccess(), 1000);
+  };
+
   return (
     <div className="w-full">
       {loadError ? (
-        <PayPalLoadError 
-          errorMessage={loadError} 
-          onRetry={retryLoading} 
-        />
+        <div className="space-y-6">
+          <PayPalLoadError 
+            errorMessage={loadError} 
+            onRetry={retryLoading} 
+          />
+          
+          <div className="border-t border-dashed border-amber-200 pt-6">
+            <div className="text-center mb-4">
+              <h3 className="text-base font-medium">Use Demo Payment Instead</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                For this demonstration, you can use our simulated payment option
+              </p>
+              
+              <Button
+                onClick={handleDemoPayment}
+                className="bg-gradient-to-r from-culinary-copper to-amber-600 hover:from-culinary-copper/90 hover:to-amber-700"
+                size="lg"
+              >
+                <CreditCard className="mr-2" size={18} />
+                Complete Demo Purchase
+              </Button>
+              
+              <p className="text-xs text-muted-foreground mt-3">
+                This simulates a successful payment for demonstration purposes
+              </p>
+            </div>
+          </div>
+        </div>
       ) : isLoading ? (
         <div className="flex flex-col items-center justify-center py-6">
           <Loader2 className="h-8 w-8 animate-spin text-culinary-copper mb-2" />
@@ -42,7 +78,16 @@ const PayPalButton = ({ plan, onSuccess }: PayPalButtonProps) => {
         </div>
       ) : (
         <div className="text-center py-4">
-          <p>Something went wrong. Please try refreshing the page.</p>
+          <Button
+            onClick={handleDemoPayment}
+            className="bg-culinary-copper hover:bg-culinary-copper/90"
+          >
+            <CreditCard className="mr-2" size={18} />
+            Complete Demo Purchase
+          </Button>
+          <p className="text-xs text-muted-foreground mt-2">
+            This simulates a successful payment for demonstration purposes
+          </p>
         </div>
       )}
     </div>

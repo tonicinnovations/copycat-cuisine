@@ -23,7 +23,7 @@ export const usePayPalSdk = () => {
     }
     
     const script = document.createElement('script');
-    // Use the simplest configuration first - only request essential components
+    // Use the simplest configuration
     script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture`;
     script.async = true;
     
@@ -35,7 +35,7 @@ export const usePayPalSdk = () => {
     
     script.onerror = () => {
       console.error("Error loading PayPal SDK");
-      setLoadError("There was an issue connecting to PayPal. This may be due to developer account limitations or configuration issues.");
+      setLoadError("PayPal integration requires a business account. This demo application is limited due to PayPal developer account restrictions.");
       setIsLoading(false);
     };
     
@@ -47,7 +47,7 @@ export const usePayPalSdk = () => {
     // Slight delay before loading to ensure DOM is ready
     const timer = setTimeout(() => {
       loadPayPalScript();
-    }, 300);
+    }, 500); // Increased delay to ensure page is fully loaded
     
     // Cleanup function
     return () => {
