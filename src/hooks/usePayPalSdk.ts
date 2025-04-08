@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 
 // Use a real client ID from PayPal - this should be your own client ID
@@ -18,15 +18,26 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadAttempts, setLoadAttempts] = useState(0);
 
-  const loadPayPalSdk = () => {
+  // Check if PayPal is already loaded when the component mounts
+  useEffect(() => {
+    if (window.paypal) {
+      setPaypalLoaded(true);
+    }
+  }, []);
+
+  const loadPayPalSdk = useCallback(() => {
     // Clear any previous errors
     setLoadError(null);
     
-    // Don't attempt to load if already loaded or currently loading
-    if (window.paypal || isLoading) {
-      if (window.paypal) {
-        setPaypalLoaded(true);
-      }
+    // If PayPal is already available globally, set as loaded
+    if (window.paypal) {
+      console.log("PayPal SDK already loaded");
+      setPaypalLoaded(true);
+      return;
+    }
+    
+    // Don't attempt to load if currently loading
+    if (isLoading) {
       return;
     }
     
@@ -42,10 +53,11 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
     // Create script element
     const script = document.createElement('script');
     
-    // Simpler PayPal SDK URL with fewer parameters
+    // Use a simpler PayPal SDK URL with fewer parameters to reduce load errors
     script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
     script.async = true;
     script.defer = true;
+    script.id = "paypal-sdk-script";
     
     const handleLoad = () => {
       console.log("PayPal SDK loaded successfully!");
@@ -57,7 +69,7 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
     const handleError = (e: Event) => {
       console.error("Error loading PayPal SDK:", e);
       setIsLoading(false);
-      setLoadError("Failed to load PayPal. Please check your internet connection and try again.");
+      setLoadError("Failed to load PayPal. Please try again or disable ad blockers if you have any.");
       setLoadAttempts(prev => prev + 1);
       
       // Only show toast on first error
@@ -71,7 +83,24 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
     
     document.body.appendChild(script);
     
+    // Add a timeout fallback in case the script gets stuck loading
+    const timeoutId = setTimeout(() => {
+      if (!window.paypal && !loadError) {
+        console.log("PayPal SDK load timeout - forcing retry");
+        script.removeEventListener('load', handleLoad);
+        script.removeEventListener('error', handleError);
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
+        setIsLoading(false);
+        setLoadError("PayPal loading timed out. Please try again.");
+        
+        // Don't retry automatically to avoid infinite loops
+      }
+    }, 10000); // 10 second timeout
+    
     return () => {
+      clearTimeout(timeoutId);
       script.removeEventListener('load', handleLoad);
       script.removeEventListener('error', handleError);
       if (document.body.contains(script)) {
@@ -79,7 +108,7 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
       }
       setIsLoading(false);
     };
-  };
+  }, [isLoading, loadAttempts, loadError]);
 
   // Load PayPal SDK on component mount
   useEffect(() => {
@@ -91,18 +120,18 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
         cleanup();
       }
     };
-  }, []);
+  }, [loadPayPalSdk]);
 
-  const retryLoading = () => {
+  const retryLoading = useCallback(() => {
     setLoadError(null);
     setPaypalLoaded(false);
     
-    // Add a small delay before retrying
+    // Add a small delay before retrying to give browser time to clean up
     setTimeout(() => {
       setLoadAttempts(0); // Reset attempts on manual retry
       loadPayPalSdk();
     }, 500);
-  };
+  }, [loadPayPalSdk]);
 
   return { paypalLoaded, loadError, retryLoading };
 };
