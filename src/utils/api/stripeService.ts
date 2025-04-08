@@ -1,10 +1,8 @@
-
 import { toast } from "sonner";
 import { createClient } from '@supabase/supabase-js';
+import { supabaseUrl, supabaseAnonKey, isSupabaseConfigured } from './supabaseConfig';
 
 // Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Function to redirect to Stripe Checkout
@@ -28,6 +26,11 @@ export const createStripeCheckoutSession = async (plan: {
   period: string;
 }): Promise<{ sessionId: string; url: string } | null> => {
   try {
+    // Check if Supabase is properly configured
+    if (!isSupabaseConfigured()) {
+      throw new Error('Supabase configuration is missing. Cannot process payment without proper configuration.');
+    }
+    
     // Convert price from string format (e.g., "$49.99") to cents for Stripe
     const priceInDollars = parseFloat(plan.price.replace('$', ''));
     const priceInCents = Math.round(priceInDollars * 100);
@@ -80,6 +83,11 @@ export const createStripeCheckoutSession = async (plan: {
 // Helper function to verify subscription status
 export const verifySubscription = async (): Promise<boolean> => {
   try {
+    // Check if Supabase is properly configured
+    if (!isSupabaseConfigured()) {
+      throw new Error('Supabase configuration is missing. Cannot verify subscription without proper configuration.');
+    }
+    
     // Call Supabase Edge Function to verify subscription status
     const { data, error } = await supabase.functions.invoke("check-subscription");
     

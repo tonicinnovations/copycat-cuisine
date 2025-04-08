@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { createStripeCheckoutSession } from '@/utils/api/stripeService';
+import { isSupabaseConfigured } from '@/utils/api/supabaseConfig';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface StripeButtonProps {
@@ -37,7 +38,7 @@ const StripeButton = ({
       console.log(`Processing ${plan.name} payment for ${plan.price}`);
       
       // Check if Supabase is properly initialized
-      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      if (!isSupabaseConfigured()) {
         throw new Error("Supabase configuration is missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.");
       }
       
