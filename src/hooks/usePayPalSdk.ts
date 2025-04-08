@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
 // Use the PayPal Sandbox client ID (this is a valid sandbox client ID for demos)
-const PAYPAL_CLIENT_ID = "sb";
+const PAYPAL_CLIENT_ID = "test";
 
 interface UsePayPalSdkResult {
   paypalLoaded: boolean;
@@ -34,9 +34,10 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
     // Create script element
     const script = document.createElement('script');
     
-    // Use a simpler URL for the sandbox environment
-    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
+    // Use alternative sandbox URL with minimal params to avoid common issues
+    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}`;
     script.async = true;
+    script.crossOrigin = "anonymous"; // Add cross-origin attribute
     
     const handleLoad = () => {
       console.log("PayPal SDK loaded successfully");
@@ -47,7 +48,7 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
     const handleError = (e: Event) => {
       console.error("Error loading PayPal SDK:", e);
       setIsLoading(false);
-      setLoadError("Failed to load PayPal. Please try again or use a different payment method.");
+      setLoadError("Failed to load PayPal. This is a demo environment, so PayPal may not be available.");
       toast.error("Failed to load PayPal");
     };
     
