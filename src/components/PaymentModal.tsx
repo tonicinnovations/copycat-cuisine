@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 // Import payment components
 import PaymentSuccess from './payment/PaymentSuccess';
 import PriceSummary from './payment/PriceSummary';
-import StripeButton from './payment/StripeButton';
+import CreditCardForm from './payment/CreditCardForm';
 
 interface PaymentModalProps {
   open: boolean;
@@ -37,6 +37,17 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
     }, 1500);
   };
   
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsProcessing(true);
+    
+    // Simulate payment processing
+    setTimeout(() => {
+      setIsProcessing(false);
+      handlePaymentSuccess();
+    }, 1500);
+  };
+  
   if (!plan) return null;
   
   return (
@@ -65,11 +76,10 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
                 Pay securely with your credit/debit card
               </div>
               
-              <StripeButton 
+              <CreditCardForm 
                 plan={plan}
-                onSuccess={handlePaymentSuccess}
-                onProcessingChange={setIsProcessing}
-                onComplete={() => {}}
+                isProcessing={isProcessing}
+                onSubmit={handleSubmit}
               />
             </div>
             

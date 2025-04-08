@@ -41,7 +41,7 @@ const CancellationDialog = ({
           {premiumStatus.subscriptionId && (
             <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-amber-800 text-sm mb-4">
               <p className="font-medium">Important</p>
-              <p>This will cancel your subscription. This action cannot be undone.</p>
+              <p>This will cancel your premium subscription. This action cannot be undone.</p>
             </div>
           )}
         </div>
