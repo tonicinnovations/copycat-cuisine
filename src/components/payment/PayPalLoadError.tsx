@@ -15,7 +15,7 @@ const PayPalLoadError = ({ errorMessage, onRetry }: PayPalLoadErrorProps) => {
         <p className="font-medium">{errorMessage}</p>
       </div>
       <p className="text-sm text-muted-foreground mb-3">
-        This could be due to a network issue, browser settings, or ad blockers.
+        This could be due to developer account limitations, browser settings, or network issues.
       </p>
       <div className="flex flex-col gap-2">
         <Button 
@@ -27,13 +27,13 @@ const PayPalLoadError = ({ errorMessage, onRetry }: PayPalLoadErrorProps) => {
           Try Again
         </Button>
         <Button
-          onClick={() => window.open("https://www.paypal.com", "_blank")}
+          onClick={() => window.open("https://developer.paypal.com/dashboard/", "_blank")}
           variant="outline"
           size="sm"
           className="mt-1"
         >
           <ExternalLink size={14} className="mr-2" />
-          Check PayPal Status
+          Check PayPal Developer Dashboard
         </Button>
       </div>
     </div>

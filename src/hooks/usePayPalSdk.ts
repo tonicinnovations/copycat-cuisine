@@ -23,8 +23,8 @@ export const usePayPalSdk = () => {
     }
     
     const script = document.createElement('script');
-    // Add more parameters to ensure better compatibility
-    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&components=buttons`;
+    // Use the simplest configuration first - only request essential components
+    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture`;
     script.async = true;
     
     script.onload = () => {
@@ -35,7 +35,7 @@ export const usePayPalSdk = () => {
     
     script.onerror = () => {
       console.error("Error loading PayPal SDK");
-      setLoadError("Failed to connect to PayPal. Please try using a different browser or check if any extensions are blocking the connection.");
+      setLoadError("There was an issue connecting to PayPal. This may be due to developer account limitations or configuration issues.");
       setIsLoading(false);
     };
     
