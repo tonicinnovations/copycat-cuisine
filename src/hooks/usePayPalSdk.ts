@@ -23,7 +23,8 @@ export const usePayPalSdk = () => {
     }
     
     const script = document.createElement('script');
-    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
+    // Add more parameters to ensure better compatibility
+    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&components=buttons`;
     script.async = true;
     
     script.onload = () => {
@@ -34,7 +35,7 @@ export const usePayPalSdk = () => {
     
     script.onerror = () => {
       console.error("Error loading PayPal SDK");
-      setLoadError("Failed to connect to PayPal. Please check your internet connection and try again.");
+      setLoadError("Failed to connect to PayPal. Please try using a different browser or check if any extensions are blocking the connection.");
       setIsLoading(false);
     };
     
@@ -43,10 +44,14 @@ export const usePayPalSdk = () => {
 
   // Load the PayPal SDK when the component mounts
   useEffect(() => {
-    loadPayPalScript();
+    // Slight delay before loading to ensure DOM is ready
+    const timer = setTimeout(() => {
+      loadPayPalScript();
+    }, 300);
     
     // Cleanup function
     return () => {
+      clearTimeout(timer);
       const script = document.querySelector('script[src*="paypal.com/sdk/js"]');
       if (script) {
         document.body.removeChild(script);

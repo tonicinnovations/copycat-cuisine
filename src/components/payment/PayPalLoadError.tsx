@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, ExternalLink } from 'lucide-react';
 
 interface PayPalLoadErrorProps {
   errorMessage: string;
@@ -15,16 +15,27 @@ const PayPalLoadError = ({ errorMessage, onRetry }: PayPalLoadErrorProps) => {
         <p className="font-medium">{errorMessage}</p>
       </div>
       <p className="text-sm text-muted-foreground mb-3">
-        Please check your internet connection and try again.
+        This could be due to a network issue, browser settings, or ad blockers.
       </p>
-      <Button 
-        onClick={onRetry}
-        variant="default"
-        className="mt-2"
-      >
-        <RefreshCw size={16} className="mr-2" />
-        Try Again
-      </Button>
+      <div className="flex flex-col gap-2">
+        <Button 
+          onClick={onRetry}
+          variant="default"
+          className="mt-2"
+        >
+          <RefreshCw size={16} className="mr-2" />
+          Try Again
+        </Button>
+        <Button
+          onClick={() => window.open("https://www.paypal.com", "_blank")}
+          variant="outline"
+          size="sm"
+          className="mt-1"
+        >
+          <ExternalLink size={14} className="mr-2" />
+          Check PayPal Status
+        </Button>
+      </div>
     </div>
   );
 };
