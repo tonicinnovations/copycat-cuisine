@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Set sandbox client ID for testing purposes
+// Use the PayPal Sandbox client ID (this is a valid sandbox client ID for demos)
 const PAYPAL_CLIENT_ID = "sb";
 
 interface PayPalButtonProps {
@@ -44,24 +44,29 @@ const PayPalButton = ({
       console.log("Loading PayPal SDK...");
       const script = document.createElement('script');
       
-      // Use PayPal Sandbox for testing - adding currency and intent parameters
-      script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture`;
+      // Use PayPal Sandbox with minimal parameters to reduce errors
+      script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}`;
       script.async = true;
       
-      script.addEventListener('load', () => {
+      const handleLoad = () => {
         console.log("PayPal SDK loaded successfully");
         setPaypalLoaded(true);
-      });
+      };
       
-      script.addEventListener('error', (e) => {
+      const handleError = (e: Event) => {
         console.error("Error loading PayPal SDK:", e);
         setLoadError("Failed to load PayPal. Please try again or use a different payment method.");
         toast.error("Failed to load PayPal");
-      });
+      };
+      
+      script.addEventListener('load', handleLoad);
+      script.addEventListener('error', handleError);
       
       document.body.appendChild(script);
       
       return () => {
+        script.removeEventListener('load', handleLoad);
+        script.removeEventListener('error', handleError);
         if (document.body.contains(script)) {
           document.body.removeChild(script);
         }
@@ -142,7 +147,7 @@ const PayPalButton = ({
             layout: 'vertical',
             color: 'gold',
             shape: 'rect',
-            label: 'paypal'  // Changed to "paypal" to show both PayPal and card options
+            label: 'paypal'
           }
         });
         
