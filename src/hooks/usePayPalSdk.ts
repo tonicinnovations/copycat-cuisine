@@ -16,6 +16,7 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
   const [paypalLoaded, setPaypalLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadAttempts, setLoadAttempts] = useState(0);
 
   const loadPayPalSdk = () => {
     // Clear any previous errors
@@ -30,27 +31,39 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
     }
     
     setIsLoading(true);
-    console.log("Loading PayPal SDK...");
+    console.log("Loading PayPal SDK (attempt #" + (loadAttempts + 1) + ")...");
+    
+    // Remove any existing PayPal scripts to prevent conflicts
+    const existingScript = document.querySelector('script[src*="paypal.com/sdk/js"]');
+    if (existingScript) {
+      document.body.removeChild(existingScript);
+    }
     
     // Create script element
     const script = document.createElement('script');
     
-    // Standard PayPal SDK URL with proper parameters
-    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture`;
+    // Simpler PayPal SDK URL with fewer parameters
+    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
     script.async = true;
-    script.crossOrigin = "anonymous";
+    script.defer = true;
     
     const handleLoad = () => {
-      console.log("PayPal SDK loaded successfully");
+      console.log("PayPal SDK loaded successfully!");
       setIsLoading(false);
       setPaypalLoaded(true);
+      setLoadAttempts(0); // Reset attempts on success
     };
     
     const handleError = (e: Event) => {
       console.error("Error loading PayPal SDK:", e);
       setIsLoading(false);
       setLoadError("Failed to load PayPal. Please check your internet connection and try again.");
-      toast.error("Failed to load PayPal");
+      setLoadAttempts(prev => prev + 1);
+      
+      // Only show toast on first error
+      if (loadAttempts < 1) {
+        toast.error("Failed to load PayPal");
+      }
     };
     
     script.addEventListener('load', handleLoad);
@@ -85,7 +98,10 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
     setPaypalLoaded(false);
     
     // Add a small delay before retrying
-    setTimeout(loadPayPalSdk, 500);
+    setTimeout(() => {
+      setLoadAttempts(0); // Reset attempts on manual retry
+      loadPayPalSdk();
+    }, 500);
   };
 
   return { paypalLoaded, loadError, retryLoading };

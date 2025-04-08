@@ -1,6 +1,7 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 interface PlanDetails {
   name: string;
@@ -23,6 +24,8 @@ const PayPalButtonRenderer = ({
   onProcessingChange,
   onComplete
 }: PayPalButtonRendererProps) => {
+  const [isRendering, setIsRendering] = useState(true);
+  const [renderError, setRenderError] = useState<string | null>(null);
   
   useEffect(() => {
     if (window.paypal && plan) {
@@ -31,11 +34,14 @@ const PayPalButtonRenderer = ({
       
       if (!paypalButtonsContainer) {
         console.error("PayPal button container not found");
+        setRenderError("Button container not found");
+        setIsRendering(false);
         return;
       }
       
       // Clear the container first
       paypalButtonsContainer.innerHTML = '';
+      setIsRendering(true);
       
       try {
         // Create proper PayPal buttons configuration
@@ -85,6 +91,7 @@ const PayPalButtonRenderer = ({
             console.error('PayPal Error:', err);
             toast.error('There was an error processing your payment');
             onProcessingChange(false);
+            setRenderError("Payment processing error");
             if (onError) onError(err);
           },
           // Handle cancellation
@@ -103,21 +110,48 @@ const PayPalButtonRenderer = ({
         
         if (!buttons) {
           console.error("Failed to create PayPal buttons");
+          setRenderError("Failed to create buttons");
+          setIsRendering(false);
           return;
         }
         
-        buttons.render('#paypal-button-container');
-        console.log("PayPal buttons rendered");
+        buttons.render('#paypal-button-container').then(() => {
+          console.log("PayPal buttons rendered successfully");
+          setIsRendering(false);
+        }).catch((err: any) => {
+          console.error("Error rendering PayPal buttons:", err);
+          setRenderError("Error rendering buttons");
+          setIsRendering(false);
+          if (onError) onError(err);
+        });
+        
       } catch (error) {
-        console.error("Error rendering PayPal buttons:", error);
+        console.error("Error creating PayPal buttons:", error);
         toast.error("Failed to initialize PayPal");
+        setRenderError("Button initialization failed");
+        setIsRendering(false);
         if (onError) onError(error);
       }
     }
   }, [plan, onSuccess, onProcessingChange, onComplete, onError]);
 
   return (
-    <div id="paypal-button-container" className="w-full min-h-[150px]"></div>
+    <div id="paypal-button-container" className="w-full min-h-[150px]">
+      {isRendering && (
+        <div className="flex flex-col items-center justify-center py-4">
+          <Loader2 className="w-8 h-8 mb-2 animate-spin text-culinary-copper" />
+          <p className="text-sm text-muted-foreground">Initializing PayPal...</p>
+        </div>
+      )}
+      {renderError && (
+        <div className="text-center py-4 text-red-500">
+          <p>Error: {renderError}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Please reload the page and try again.
+          </p>
+        </div>
+      )}
+    </div>
   );
 };
 
