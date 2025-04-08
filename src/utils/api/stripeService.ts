@@ -11,7 +11,7 @@ try {
     supabase = createClient(supabaseUrl, supabaseAnonKey);
     console.log('Supabase client initialized');
   } else {
-    console.warn('Supabase client not initialized due to missing configuration');
+    console.error('Supabase client not initialized due to missing configuration');
   }
 } catch (error) {
   console.error('Failed to initialize Supabase client:', error);
@@ -40,24 +40,7 @@ export const createStripeCheckoutSession = async (plan: {
   try {
     // Check if Supabase is properly configured
     if (!isSupabaseConfigured()) {
-      // In development mode, simulate a successful checkout
-      console.warn('Running in development mode without Supabase configuration');
-      toast.info('Development mode: Simulating Stripe checkout');
-      
-      // Mock a successful checkout for development purposes
-      const mockSessionId = 'mock_' + Math.random().toString(36).substring(2, 15);
-      
-      // For lifetime plan (one-time payment), store this info in localStorage
-      if (plan.period === 'lifetime') {
-        localStorage.setItem('copycat_subscription_id', mockSessionId);
-        localStorage.setItem('copycat_subscription_period', plan.period);
-      }
-      
-      // Return a mock result
-      return { 
-        sessionId: mockSessionId, 
-        url: '#mock-checkout' 
-      };
+      throw new Error('Supabase is not configured. Real payment gateway requires Supabase configuration.');
     }
     
     if (!supabase) {
@@ -118,7 +101,7 @@ export const verifySubscription = async (): Promise<boolean> => {
   try {
     // Check if Supabase is properly configured
     if (!isSupabaseConfigured()) {
-      console.warn('Supabase is not configured, subscription verification will always return false');
+      console.error('Supabase is not configured, subscription verification will always return false');
       return false;
     }
     
