@@ -3,8 +3,19 @@ import { toast } from "sonner";
 import { createClient } from '@supabase/supabase-js';
 import { supabaseUrl, supabaseAnonKey, isSupabaseConfigured } from './supabaseConfig';
 
-// Initialize Supabase client
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Initialize Supabase client only if configuration is available
+let supabase: ReturnType<typeof createClient> | null = null;
+
+try {
+  if (supabaseUrl && supabaseAnonKey) {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    console.log('Supabase client initialized');
+  } else {
+    console.warn('Supabase client not initialized due to missing configuration');
+  }
+} catch (error) {
+  console.error('Failed to initialize Supabase client:', error);
+}
 
 // Function to redirect to Stripe Checkout
 export const processStripePayment = async (plan: string, paymentDetails: any): Promise<boolean> => {
@@ -29,7 +40,28 @@ export const createStripeCheckoutSession = async (plan: {
   try {
     // Check if Supabase is properly configured
     if (!isSupabaseConfigured()) {
-      throw new Error('Supabase configuration is missing. Cannot process payment without proper configuration.');
+      // In development mode, simulate a successful checkout
+      console.warn('Running in development mode without Supabase configuration');
+      toast.info('Development mode: Simulating Stripe checkout');
+      
+      // Mock a successful checkout for development purposes
+      const mockSessionId = 'mock_' + Math.random().toString(36).substring(2, 15);
+      
+      // For lifetime plan (one-time payment), store this info in localStorage
+      if (plan.period === 'lifetime') {
+        localStorage.setItem('copycat_subscription_id', mockSessionId);
+        localStorage.setItem('copycat_subscription_period', plan.period);
+      }
+      
+      // Return a mock result
+      return { 
+        sessionId: mockSessionId, 
+        url: '#mock-checkout' 
+      };
+    }
+    
+    if (!supabase) {
+      throw new Error('Supabase client is not initialized. Cannot process payment without proper configuration.');
     }
     
     // Convert price from string format (e.g., "$49.99") to cents for Stripe
@@ -86,7 +118,12 @@ export const verifySubscription = async (): Promise<boolean> => {
   try {
     // Check if Supabase is properly configured
     if (!isSupabaseConfigured()) {
-      throw new Error('Supabase configuration is missing. Cannot verify subscription without proper configuration.');
+      console.warn('Supabase is not configured, subscription verification will always return false');
+      return false;
+    }
+    
+    if (!supabase) {
+      throw new Error('Supabase client is not initialized');
     }
     
     // Call Supabase Edge Function to verify subscription status

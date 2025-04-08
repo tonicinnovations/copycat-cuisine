@@ -37,16 +37,21 @@ const StripeButton = ({
       
       console.log(`Processing ${plan.name} payment for ${plan.price}`);
       
-      // Check if Supabase is properly initialized
-      if (!isSupabaseConfigured()) {
-        throw new Error("Supabase configuration is missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.");
-      }
-      
       // Create a Stripe Checkout session and redirect
       const result = await createStripeCheckoutSession(plan);
       
       if (!result) {
         throw new Error("Failed to create checkout session");
+      }
+      
+      // If we're in development mode with mock data, trigger success immediately
+      if (result.url === '#mock-checkout') {
+        toast.success("Development mode: Simulating successful payment");
+        setTimeout(() => {
+          onComplete();
+          onSuccess();
+        }, 1500);
+        return;
       }
       
       // The redirect will happen in the createStripeCheckoutSession function
@@ -77,56 +82,65 @@ const StripeButton = ({
             Try Again
           </Button>
         </div>
-      ) : (
-        <Button
-          onClick={handlePayment}
-          disabled={isLoading}
-          className="w-full bg-[#6772E5] hover:bg-[#556CD6]"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            <>
-              <svg 
-                width="20" 
-                height="20" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                xmlns="http://www.w3.org/2000/svg"
-                className="mr-2"
-              >
-                <path 
-                  d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-                <path 
-                  d="M16 12H8" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-                <path 
-                  d="M12 8V16" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Pay with Stripe
-            </>
-          )}
-        </Button>
-      )}
+      ) : !isSupabaseConfigured() ? (
+        <Alert className="mb-4 bg-amber-50 border-amber-200">
+          <AlertDescription className="text-amber-800">
+            Supabase configuration is missing. This is a demo mode - no actual payments will be processed.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      
+      <Button
+        onClick={handlePayment}
+        disabled={isLoading}
+        className="w-full bg-[#6772E5] hover:bg-[#556CD6]"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          <>
+            <svg 
+              width="20" 
+              height="20" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+              className="mr-2"
+            >
+              <path 
+                d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+              <path 
+                d="M16 12H8" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+              <path 
+                d="M12 8V16" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+            Pay with Stripe
+          </>
+        )}
+      </Button>
       <p className="text-xs text-center text-muted-foreground mt-3">
-        For testing, use card number 4242 4242 4242 4242
+        {!isSupabaseConfigured() 
+          ? 'This is demo mode - no actual payment will be processed.'
+          : 'For testing, use card number 4242 4242 4242 4242'
+        }
       </p>
     </div>
   );
