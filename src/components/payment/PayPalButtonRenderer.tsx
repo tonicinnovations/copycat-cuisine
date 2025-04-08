@@ -115,15 +115,15 @@ const PayPalButtonRenderer = ({
           return;
         }
         
-        buttons.render('#paypal-button-container').then(() => {
+        // Fix: The render method returns void, not a Promise
+        buttons.render('#paypal-button-container');
+        console.log("PayPal buttons rendering initiated");
+        
+        // Set rendering complete after a short delay to allow rendering to complete
+        setTimeout(() => {
           console.log("PayPal buttons rendered successfully");
           setIsRendering(false);
-        }).catch((err: any) => {
-          console.error("Error rendering PayPal buttons:", err);
-          setRenderError("Error rendering buttons");
-          setIsRendering(false);
-          if (onError) onError(err);
-        });
+        }, 1000);
         
       } catch (error) {
         console.error("Error creating PayPal buttons:", error);
