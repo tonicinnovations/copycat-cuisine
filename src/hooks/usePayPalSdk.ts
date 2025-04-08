@@ -21,7 +21,10 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
   // Check if PayPal is already loaded when the component mounts
   useEffect(() => {
     if (window.paypal) {
+      console.log("PayPal SDK already loaded on mount");
       setPaypalLoaded(true);
+    } else {
+      console.log("PayPal SDK not found on mount");
     }
   }, []);
 
@@ -31,13 +34,14 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
     
     // If PayPal is already available globally, set as loaded
     if (window.paypal) {
-      console.log("PayPal SDK already loaded");
+      console.log("PayPal SDK already loaded in loadPayPalSdk");
       setPaypalLoaded(true);
       return;
     }
     
     // Don't attempt to load if currently loading
     if (isLoading) {
+      console.log("Already loading PayPal SDK, skipping duplicate load");
       return;
     }
     
@@ -45,16 +49,17 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
     console.log("Loading PayPal SDK (attempt #" + (loadAttempts + 1) + ")...");
     
     // Remove any existing PayPal scripts to prevent conflicts
-    const existingScript = document.querySelector('script[src*="paypal.com/sdk/js"]');
-    if (existingScript) {
-      document.body.removeChild(existingScript);
-    }
+    const existingScripts = document.querySelectorAll('script[src*="paypal.com/sdk/js"]');
+    existingScripts.forEach(script => {
+      console.log("Removing existing PayPal script");
+      document.body.removeChild(script);
+    });
     
     // Create script element
     const script = document.createElement('script');
     
-    // Use a simpler PayPal SDK URL with fewer parameters to reduce load errors
-    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
+    // Use the basic SDK URL with minimal parameters
+    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}`;
     script.async = true;
     script.defer = true;
     script.id = "paypal-sdk-script";
@@ -69,7 +74,7 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
     const handleError = (e: Event) => {
       console.error("Error loading PayPal SDK:", e);
       setIsLoading(false);
-      setLoadError("Failed to load PayPal. Please try again or disable ad blockers if you have any.");
+      setLoadError("Failed to load PayPal. Please check your network connection or try again later.");
       setLoadAttempts(prev => prev + 1);
       
       // Only show toast on first error
@@ -82,6 +87,7 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
     script.addEventListener('error', handleError);
     
     document.body.appendChild(script);
+    console.log("PayPal script added to the document body");
     
     // Add a timeout fallback in case the script gets stuck loading
     const timeoutId = setTimeout(() => {
@@ -94,8 +100,6 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
         }
         setIsLoading(false);
         setLoadError("PayPal loading timed out. Please try again.");
-        
-        // Don't retry automatically to avoid infinite loops
       }
     }, 10000); // 10 second timeout
     
@@ -103,10 +107,6 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
       clearTimeout(timeoutId);
       script.removeEventListener('load', handleLoad);
       script.removeEventListener('error', handleError);
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-      setIsLoading(false);
     };
   }, [isLoading, loadAttempts, loadError]);
 
@@ -123,8 +123,28 @@ export const usePayPalSdk = (): UsePayPalSdkResult => {
   }, [loadPayPalSdk]);
 
   const retryLoading = useCallback(() => {
+    console.log("Manual retry of PayPal SDK loading initiated");
     setLoadError(null);
     setPaypalLoaded(false);
+    
+    // Remove any existing PayPal scripts
+    const existingScripts = document.querySelectorAll('script[src*="paypal.com/sdk/js"]');
+    existingScripts.forEach(script => {
+      console.log("Removing existing PayPal script during retry");
+      document.body.removeChild(script);
+    });
+    
+    // Also check if the global paypal object exists and attempt to clean it
+    if (window.paypal) {
+      console.log("PayPal global object exists but loading failed - attempting cleanup");
+      try {
+        // @ts-ignore - for cleanup purposes
+        delete window.paypal;
+        console.log("Cleaned up global PayPal object");
+      } catch (e) {
+        console.warn("Could not clean up global PayPal object:", e);
+      }
+    }
     
     // Add a small delay before retrying to give browser time to clean up
     setTimeout(() => {
