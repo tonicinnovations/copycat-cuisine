@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface PayPalButtonRendererProps {
   plan: {
@@ -114,28 +113,11 @@ const PayPalButtonRenderer = ({
     };
   }, [plan, onSuccess, onError]);
 
-  // Fallback for when buttons can't be rendered
   if (renderError) {
     return (
-      <div className="border border-amber-200 bg-amber-50 rounded-lg p-4 text-center">
+      <div className="text-center p-4">
         <p className="text-amber-700 mb-3">
           We're experiencing issues connecting to PayPal. Please try again later.
-        </p>
-        <Button
-          onClick={() => {
-            // Simulate successful payment for testing
-            console.log("Simulating successful payment");
-            localStorage.setItem('copycat_subscription_id', 'test-subscription-123');
-            localStorage.setItem('copycat_subscription_period', plan.period);
-            toast.success('Demo payment processed!');
-            setTimeout(() => onSuccess(), 500);
-          }}
-          className="bg-amber-600 hover:bg-amber-700"
-        >
-          Complete Demo Purchase
-        </Button>
-        <p className="text-xs text-muted-foreground mt-3">
-          Note: This is a simulated payment for testing purposes
         </p>
       </div>
     );
