@@ -85,16 +85,20 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
                     <path d="M20.1 6.35c.2.94.1 1.8-.1 2.96-.7 3.8-3.2 5.8-7.1 5.8h-.5c-.4 0-.7.3-.8.7l-.1.4-.8 5.1c-.1.4-.4.6-.8.6H6.5c-.4 0-.7-.4-.6-.8l1.3-8.1c0-.2.2-.3.4-.3h1.5c4.8 0 8.5-1.9 9.5-7.3.1-.3.1-.5.2-.8.1-.2.3-.1.3-.1z" />
                     <path d="M8.9 6.85c.2-1.3 1.3-2.3 2.7-2.3h3.6c.4 0 .8.1 1.2.1-1.1 5.1-4.9 7.8-10.2 7.8H4.5c-.4 0-.7.4-.6.8l1.9 12c.1.3.4.6.7.6h3.4c.4 0 .7-.3.8-.7l.6-3.8c.1-.4.4-.7.8-.7h.5c3.9 0 6.9-1.9 7.8-6 .3-1.5.1-2.8-.6-3.7.1-.4 0-.8-.1-1.2.1-1 0-2-1.2-2.9-.9-.7-2.2-1-3.8-1H8.9v.9z" />
                   </svg>
-                  <span>PayPal</span>
+                  <span>PayPal or Card</span>
                 </TabsTrigger>
                 <TabsTrigger value="card" className="flex items-center gap-2">
                   <CreditCard size={16} />
-                  <span>Card</span>
+                  <span>Direct Card</span>
                 </TabsTrigger>
               </TabsList>
               
               <TabsContent value="paypal" className="flex flex-col items-center justify-center py-4">
                 <PriceSummary price={plan.price} />
+                
+                <div className="mb-3 text-center text-sm text-muted-foreground">
+                  Pay securely with PayPal or any credit/debit card without a PayPal account
+                </div>
                 
                 <PayPalButton 
                   plan={plan}

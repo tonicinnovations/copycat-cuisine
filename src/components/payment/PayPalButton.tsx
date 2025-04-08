@@ -44,8 +44,8 @@ const PayPalButton = ({
       console.log("Loading PayPal SDK...");
       const script = document.createElement('script');
       
-      // Use PayPal Sandbox for testing
-      script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
+      // Use PayPal Sandbox for testing - adding currency and intent parameters
+      script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture`;
       script.async = true;
       
       script.addEventListener('load', () => {
@@ -142,7 +142,7 @@ const PayPalButton = ({
             layout: 'vertical',
             color: 'gold',
             shape: 'rect',
-            label: 'pay'
+            label: 'paypal'  // Changed to "paypal" to show both PayPal and card options
           }
         });
         
@@ -178,7 +178,12 @@ const PayPalButton = ({
           </button>
         </div>
       ) : paypalLoaded ? (
-        <div id="paypal-button-container" className="w-full min-h-[150px]"></div>
+        <div>
+          <div id="paypal-button-container" className="w-full min-h-[150px]"></div>
+          <p className="text-xs text-center text-muted-foreground mt-1">
+            No PayPal account required - you can pay with credit/debit card
+          </p>
+        </div>
       ) : (
         <div className="flex justify-center py-6">
           <Loader2 className="h-8 w-8 animate-spin text-culinary-copper" />
