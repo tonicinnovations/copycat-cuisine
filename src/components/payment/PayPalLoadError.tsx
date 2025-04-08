@@ -15,12 +15,11 @@ const PayPalLoadError = ({ errorMessage, onRetry }: PayPalLoadErrorProps) => {
         <p className="font-medium">{errorMessage}</p>
       </div>
       <p className="text-sm text-muted-foreground mb-4">
-        Possible issues that may prevent PayPal from loading:
+        Possible issues:
         <ul className="mt-2 space-y-1 list-disc list-inside">
-          <li>Temporary network connection issues</li>
-          <li>PayPal service disruption</li>
-          <li>Browser cookie, cache, or security settings</li>
-          <li>Browser extensions or privacy/security settings</li>
+          <li>Network connection issues</li>
+          <li>Browser cookie or cache settings</li>
+          <li>Browser extensions blocking scripts</li>
         </ul>
       </p>
       <div className="flex flex-col sm:flex-row justify-center gap-3">
@@ -29,7 +28,7 @@ const PayPalLoadError = ({ errorMessage, onRetry }: PayPalLoadErrorProps) => {
           variant="default"
           className="mt-2 gap-2"
         >
-          <RefreshCw size={16} className="animate-spin-once" />
+          <RefreshCw size={16} />
           Try Again
         </Button>
         
@@ -50,10 +49,6 @@ const PayPalLoadError = ({ errorMessage, onRetry }: PayPalLoadErrorProps) => {
           PayPal Help
         </Button>
       </div>
-      <p className="text-xs text-muted-foreground mt-4">
-        If this issue persists, please try using a different browser or device, 
-        or clearing your browser cache and cookies.
-      </p>
     </div>
   );
 };
