@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 // Import payment components
-import PayPalButton from './payment/PayPalButton';
 import PaymentSuccess from './payment/PaymentSuccess';
 import PriceSummary from './payment/PriceSummary';
+import StripeButton from './payment/StripeButton';
 
 interface PaymentModalProps {
   open: boolean;
@@ -20,11 +20,14 @@ interface PaymentModalProps {
 
 const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => {
   const [isComplete, setIsComplete] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const handleClose = () => {
     // Only allow closing if payment is not in progress
-    setIsComplete(false);
-    onClose();
+    if (!isProcessing) {
+      setIsComplete(false);
+      onClose();
+    }
   };
   
   const handlePaymentSuccess = () => {
@@ -59,12 +62,14 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
               <PriceSummary price={plan.price} />
               
               <div className="mb-4 text-center text-sm text-muted-foreground">
-                Pay securely with PayPal or any credit/debit card
+                Pay securely with your credit/debit card
               </div>
               
-              <PayPalButton 
+              <StripeButton 
                 plan={plan}
                 onSuccess={handlePaymentSuccess}
+                onProcessingChange={setIsProcessing}
+                onComplete={() => {}}
               />
             </div>
             

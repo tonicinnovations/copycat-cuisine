@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import CancelSubscriptionButton from '@/components/payment/CancelSubscriptionButton';
 import { PremiumStatus } from '@/utils/storage';
 
 interface CancellationDialogProps {
@@ -36,13 +35,13 @@ const CancellationDialog = ({
         
         <div className="py-4">
           <p className="text-sm text-muted-foreground mb-4">
-            Your subscription will be canceled through PayPal. You will not be charged for the next billing period.
+            Your subscription will be canceled. You will not be charged for the next billing period.
           </p>
           
           {premiumStatus.subscriptionId && (
             <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-amber-800 text-sm mb-4">
               <p className="font-medium">Important</p>
-              <p>This will cancel your PayPal subscription. This action cannot be undone.</p>
+              <p>This will cancel your subscription. This action cannot be undone.</p>
             </div>
           )}
         </div>
@@ -52,16 +51,9 @@ const CancellationDialog = ({
             Keep Subscription
           </Button>
           
-          {premiumStatus.subscriptionId ? (
-            <CancelSubscriptionButton 
-              subscriptionId={premiumStatus.subscriptionId}
-              onCancelled={handleCancelSubscription}
-            />
-          ) : (
-            <Button variant="destructive" onClick={handleCancelSubscription}>
-              Yes, Cancel
-            </Button>
-          )}
+          <Button variant="destructive" onClick={handleCancelSubscription}>
+            Yes, Cancel
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
