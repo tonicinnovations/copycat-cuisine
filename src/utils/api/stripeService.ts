@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { createClient } from '@supabase/supabase-js';
 import { supabaseUrl, supabaseAnonKey, isSupabaseConfigured } from './supabaseConfig';
