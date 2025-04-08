@@ -1,5 +1,5 @@
 
-import { Loader2, CreditCard } from 'lucide-react';
+import { Loader2, CreditCard, AlertCircle } from 'lucide-react';
 import { usePayPalSdk } from '@/hooks/usePayPalSdk';
 import PayPalButtonRenderer from './PayPalButtonRenderer';
 import PayPalLoadError from './PayPalLoadError';
@@ -46,7 +46,7 @@ const PayPalButton = ({ plan, onSuccess }: PayPalButtonProps) => {
               
               <Button
                 onClick={handleDemoPayment}
-                className="bg-gradient-to-r from-culinary-copper to-amber-600 hover:from-culinary-copper/90 hover:to-amber-700"
+                className="bg-gradient-to-r from-culinary-copper to-amber-600 hover:from-culinary-copper/90 hover:to-amber-700 w-full"
                 size="lg"
               >
                 <CreditCard className="mr-2" size={18} />
@@ -68,6 +68,15 @@ const PayPalButton = ({ plan, onSuccess }: PayPalButtonProps) => {
         </div>
       ) : paypalLoaded ? (
         <div>
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
+            <div className="flex items-start">
+              <AlertCircle className="text-amber-600 mr-2 mt-0.5" size={16} />
+              <p className="text-xs">
+                <span className="font-medium">Note:</span> PayPal integration requires a business account. This demo uses a developer account which cannot process real payments.
+              </p>
+            </div>
+          </div>
+          
           <PayPalButtonRenderer
             plan={plan}
             onSuccess={onSuccess}
@@ -75,6 +84,16 @@ const PayPalButton = ({ plan, onSuccess }: PayPalButtonProps) => {
           <p className="text-xs text-center text-muted-foreground mt-2">
             No PayPal account required - you can pay with credit/debit card
           </p>
+          
+          <div className="mt-4 pt-4 border-t border-dashed">
+            <Button
+              onClick={handleDemoPayment}
+              className="w-full bg-culinary-copper hover:bg-culinary-copper/90"
+            >
+              <CreditCard className="mr-2" size={18} />
+              Complete Demo Purchase Instead
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="text-center py-4">
