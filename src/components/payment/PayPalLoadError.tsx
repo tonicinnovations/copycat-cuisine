@@ -1,5 +1,6 @@
 
 import { Button } from '@/components/ui/button';
+import { AlertCircle } from 'lucide-react';
 
 interface PayPalLoadErrorProps {
   errorMessage: string;
@@ -8,13 +9,20 @@ interface PayPalLoadErrorProps {
 
 const PayPalLoadError = ({ errorMessage, onRetry }: PayPalLoadErrorProps) => {
   return (
-    <div className="text-center py-6 text-red-500">
-      <p>{errorMessage}</p>
+    <div className="text-center py-6">
+      <div className="flex items-center justify-center mb-2 text-red-500">
+        <AlertCircle className="mr-2" size={20} />
+        <p className="font-medium">{errorMessage}</p>
+      </div>
+      <p className="text-sm text-muted-foreground mb-3">
+        This could be due to a network issue or browser settings.
+      </p>
       <Button 
         onClick={onRetry}
-        className="mt-2 px-4 py-2 bg-culinary-copper text-white rounded"
+        variant="outline"
+        className="mt-2"
       >
-        Retry
+        Try Again
       </Button>
     </div>
   );
