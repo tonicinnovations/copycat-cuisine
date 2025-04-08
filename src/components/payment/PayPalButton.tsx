@@ -1,5 +1,5 @@
 
-import { Loader2, CreditCard, AlertCircle } from 'lucide-react';
+import { Loader2, CreditCard } from 'lucide-react';
 import { usePayPalSdk } from '@/hooks/usePayPalSdk';
 import PayPalButtonRenderer from './PayPalButtonRenderer';
 import PayPalLoadError from './PayPalLoadError';
@@ -68,15 +68,6 @@ const PayPalButton = ({ plan, onSuccess }: PayPalButtonProps) => {
         </div>
       ) : paypalLoaded ? (
         <div>
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
-            <div className="flex items-start">
-              <AlertCircle className="text-amber-600 mr-2 mt-0.5" size={16} />
-              <p className="text-xs">
-                <span className="font-medium">Note:</span> PayPal integration requires a business account. This demo uses a developer account which cannot process real payments.
-              </p>
-            </div>
-          </div>
-          
           <PayPalButtonRenderer
             plan={plan}
             onSuccess={onSuccess}

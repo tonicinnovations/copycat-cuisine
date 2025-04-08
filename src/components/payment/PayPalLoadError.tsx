@@ -15,7 +15,7 @@ const PayPalLoadError = ({ errorMessage, onRetry }: PayPalLoadErrorProps) => {
         <p className="font-medium">{errorMessage}</p>
       </div>
       <p className="text-sm text-muted-foreground mb-3">
-        PayPal's checkout integration requires a PayPal Business account. This demo app uses a developer account, which cannot process real payments.
+        We're having trouble connecting to PayPal's payment service. Please try again or use an alternative payment method.
       </p>
       <div className="flex flex-col gap-2">
         <Button 
@@ -28,33 +28,23 @@ const PayPalLoadError = ({ errorMessage, onRetry }: PayPalLoadErrorProps) => {
         </Button>
         
         <Button
-          onClick={() => window.open("https://www.paypal.com/business/tools/checkout", "_blank")}
+          onClick={() => window.open("https://www.paypal.com", "_blank")}
           variant="outline"
           size="sm"
           className="mt-1"
         >
           <ExternalLink size={14} className="mr-2" />
-          PayPal Business Account Setup
+          PayPal Website
         </Button>
         
         <Button
-          onClick={() => window.open("https://developer.paypal.com/dashboard/", "_blank")}
-          variant="outline"
-          size="sm"
-          className="mt-1"
-        >
-          <ExternalLink size={14} className="mr-2" />
-          PayPal Developer Dashboard
-        </Button>
-        
-        <Button
-          onClick={() => window.open("https://www.paypal.com/businessmanage/account/accountSummary", "_blank")}
+          onClick={() => window.open("https://www.paypal.com/signin", "_blank")}
           variant="outline"
           size="sm"
           className="mt-1 border-amber-200"
         >
           <CreditCard size={14} className="mr-2" />
-          Access Your PayPal Business Account
+          Sign In to PayPal
         </Button>
       </div>
     </div>

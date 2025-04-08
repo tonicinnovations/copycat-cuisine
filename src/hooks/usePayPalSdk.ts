@@ -35,7 +35,7 @@ export const usePayPalSdk = () => {
     
     script.onerror = () => {
       console.error("Error loading PayPal SDK");
-      setLoadError("PayPal requires a business account for payment integration. This demo cannot process real payments with a developer account.");
+      setLoadError("Unable to connect to PayPal. Please try again later or use the demo payment option.");
       setIsLoading(false);
     };
     
@@ -47,7 +47,7 @@ export const usePayPalSdk = () => {
     // Slight delay before loading to ensure DOM is ready
     const timer = setTimeout(() => {
       loadPayPalScript();
-    }, 1000); // Increased delay to ensure page is fully loaded
+    }, 1000);
     
     // Cleanup function
     return () => {
