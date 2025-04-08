@@ -1,8 +1,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-// PayPal Client ID - replace with your own
-const PAYPAL_CLIENT_ID = "YOUR_PAYPAL_CLIENT_ID"; // Replace with your actual client ID
+// PayPal Client ID
+const PAYPAL_CLIENT_ID = "AWlG0jsULIbL7Un-uRUaB88Q_zn8Vu09fpwqI-sm9p9iV0IdgiASJwFUQvX3slmCYAuXRn9UrudgwVx5";
 
 export const usePayPalSdk = () => {
   const [paypalLoaded, setPaypalLoaded] = useState(false);
