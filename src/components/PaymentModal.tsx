@@ -1,7 +1,6 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { CreditCard } from 'lucide-react';
 
 // Import payment components
 import PayPalButton from './payment/PayPalButton';
@@ -20,15 +19,19 @@ interface PaymentModalProps {
 }
 
 const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => {
-  const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   
   const handleClose = () => {
-    // Reset state when modal is closed
-    if (!isProcessing) {
-      setIsComplete(false);
-      onClose();
-    }
+    // Only allow closing if payment is not in progress
+    setIsComplete(false);
+    onClose();
+  };
+  
+  const handlePaymentSuccess = () => {
+    setIsComplete(true);
+    setTimeout(() => {
+      onSuccess();
+    }, 1500);
   };
   
   if (!plan) return null;
@@ -56,14 +59,12 @@ const PaymentModal = ({ open, onClose, plan, onSuccess }: PaymentModalProps) => 
               <PriceSummary price={plan.price} />
               
               <div className="mb-4 text-center text-sm text-muted-foreground">
-                Pay securely with PayPal or any credit/debit card without a PayPal account
+                Pay securely with PayPal or any credit/debit card
               </div>
               
               <PayPalButton 
                 plan={plan}
-                onProcessingChange={setIsProcessing}
-                onComplete={() => setIsComplete(true)}
-                onSuccess={onSuccess}
+                onSuccess={handlePaymentSuccess}
               />
             </div>
             

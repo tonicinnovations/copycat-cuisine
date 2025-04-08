@@ -11,46 +11,38 @@ interface PayPalButtonProps {
     period: string;
   };
   onSuccess: () => void;
-  onError?: (error: any) => void;
-  onProcessingChange: (isProcessing: boolean) => void;
-  onComplete: () => void;
 }
 
-const PayPalButton = ({ 
-  plan, 
-  onSuccess, 
-  onError, 
-  onProcessingChange,
-  onComplete
-}: PayPalButtonProps) => {
-  const { paypalLoaded, loadError, retryLoading } = usePayPalSdk();
+const PayPalButton = ({ plan, onSuccess }: PayPalButtonProps) => {
+  const { paypalLoaded, loadError, isLoading, retryLoading } = usePayPalSdk();
 
   return (
-    <div>
+    <div className="w-full">
       {loadError ? (
         <PayPalLoadError 
           errorMessage={loadError} 
           onRetry={retryLoading} 
         />
-      ) : paypalLoaded ? (
-        <div>
-          <PayPalButtonRenderer
-            plan={plan}
-            onSuccess={onSuccess}
-            onError={onError}
-            onProcessingChange={onProcessingChange}
-            onComplete={onComplete}
-          />
-          <p className="text-xs text-center text-muted-foreground mt-1">
-            No PayPal account required - you can pay with credit/debit card
-          </p>
-        </div>
-      ) : (
+      ) : isLoading ? (
         <div className="flex flex-col items-center justify-center py-6">
           <Loader2 className="h-8 w-8 animate-spin text-culinary-copper mb-2" />
           <p className="text-sm text-center text-muted-foreground">
             Connecting to PayPal...
           </p>
+        </div>
+      ) : paypalLoaded ? (
+        <div>
+          <PayPalButtonRenderer
+            plan={plan}
+            onSuccess={onSuccess}
+          />
+          <p className="text-xs text-center text-muted-foreground mt-2">
+            No PayPal account required - you can pay with credit/debit card
+          </p>
+        </div>
+      ) : (
+        <div className="text-center py-4">
+          <p>Something went wrong. Please try refreshing the page.</p>
         </div>
       )}
     </div>

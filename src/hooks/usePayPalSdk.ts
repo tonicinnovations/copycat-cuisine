@@ -1,86 +1,72 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
 
-// PayPal Client ID - this should be your sandbox or live client ID
-const PAYPAL_CLIENT_ID = "AYDaBq9cvDDV4l3xTgiV1cTh7aPGzK5UQf8AcYNrGFM1nJWZv_Q_i_zZxx9PCyQ0wJgxQaE3daWhWzdi";
+// PayPal Client ID - replace with your own
+const PAYPAL_CLIENT_ID = "YOUR_PAYPAL_CLIENT_ID"; // Replace with your actual client ID
 
-interface UsePayPalSdkResult {
-  paypalLoaded: boolean;
-  loadError: string | null;
-  retryLoading: () => void;
-}
-
-export const usePayPalSdk = (): UsePayPalSdkResult => {
+export const usePayPalSdk = () => {
   const [paypalLoaded, setPaypalLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Simple function to load the PayPal SDK
   const loadPayPalScript = useCallback(() => {
-    console.log("Starting fresh PayPal SDK load...");
+    setIsLoading(true);
     setLoadError(null);
     
-    // Clear any existing PayPal scripts
-    const existingScripts = document.querySelectorAll('script[src*="paypal.com"]');
-    existingScripts.forEach(script => {
-      console.log("Removing existing PayPal script");
-      script.remove();
-    });
+    // Clean up any existing PayPal scripts
+    const existingScripts = document.querySelectorAll('script[src*="paypal.com/sdk/js"]');
+    existingScripts.forEach(script => script.remove());
     
-    // Create a new script element
+    // Clear any global PayPal objects
+    if (window.paypal) {
+      delete window.paypal;
+    }
+    
     const script = document.createElement('script');
     script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
     script.async = true;
     
-    // Set up event handlers
     script.onload = () => {
       console.log("PayPal SDK loaded successfully");
       setPaypalLoaded(true);
+      setIsLoading(false);
     };
     
-    script.onerror = (error) => {
-      console.error("Error loading PayPal SDK:", error);
-      setLoadError("Failed to load PayPal. Please try again later.");
+    script.onerror = () => {
+      console.error("Error loading PayPal SDK");
+      setLoadError("Failed to connect to PayPal. Please check your internet connection and try again.");
+      setIsLoading(false);
     };
     
-    // Add the script to the document
     document.body.appendChild(script);
+  }, []);
+
+  // Load the PayPal SDK when the component mounts
+  useEffect(() => {
+    loadPayPalScript();
     
-    // Return a cleanup function
+    // Cleanup function
     return () => {
-      if (document.body.contains(script)) {
+      const script = document.querySelector('script[src*="paypal.com/sdk/js"]');
+      if (script) {
         document.body.removeChild(script);
       }
     };
-  }, []);
-
-  // Load the SDK when the component mounts
-  useEffect(() => {
-    // Check if PayPal is already loaded
-    if (window.paypal) {
-      console.log("PayPal already loaded on mount");
-      setPaypalLoaded(true);
-      return;
-    }
-    
-    const cleanup = loadPayPalScript();
-    
-    return () => {
-      if (cleanup) cleanup();
-    };
   }, [loadPayPalScript]);
 
-  // Function to retry loading if it fails
-  const retryLoading = useCallback(() => {
-    console.log("Retrying PayPal SDK load...");
-    setPaypalLoaded(false);
+  const retryLoading = () => {
     loadPayPalScript();
-  }, [loadPayPalScript]);
+  };
 
-  return { paypalLoaded, loadError, retryLoading };
+  return { 
+    paypalLoaded, 
+    loadError, 
+    isLoading, 
+    retryLoading 
+  };
 };
 
-// Add global type declaration
+// Add global type declaration for TypeScript
 declare global {
   interface Window {
     paypal?: any;
